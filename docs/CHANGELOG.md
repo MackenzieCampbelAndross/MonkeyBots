@@ -8,3 +8,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-07-14 13:20:39] chore(bot): implement automated session renewal with token refresh
 - [2026-07-14 20:28:11] chore(session): standardize headless worker task dispatch lifecycle
 - [2026-07-14 21:42:14] chore(session): optimize memory cleanup after headless browser tab closure
+- [2026-07-14 22:59:46] chore(runner): add screenshot capture on task failure for diagnostic logging
