@@ -1,0 +1,14 @@
+{
+  "activeBots": [
+    {
+      "name": "market_crawler",
+      "cron": "0 */4 * * *"
+    },
+    {
+      "name": "health_monitor",
+      "cron": "*/15 * * * *"
+    }
+  ],
+  "last_test_run": "2026-07-14 21:00:10",
+  "suite_build": 4
+}
