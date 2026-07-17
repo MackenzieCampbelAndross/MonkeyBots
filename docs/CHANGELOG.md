@@ -12,3 +12,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-07-17 11:10:39] perf(bot): document custom bot plugin configuration and hooks
 - **2026-07-17 14:49:18**: `docs(proxy): implement automated session renewal with token refresh`
   *Updated specifications and documentation details.*
+- [2026-07-17 17:42:02] perf(proxy): optimize memory cleanup after headless browser tab closure
