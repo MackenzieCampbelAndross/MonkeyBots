@@ -19,3 +19,4 @@ Automation bots, headless browser instances, and scraper worker updates.
   *Updated specifications and documentation details.*
 - [2026-07-22 18:52:33] fix(bot): update dynamic CSS selector fallback strategy for UI bot
 - [2026-07-22 22:08:48] fix(selectors): implement rate limiting queue to prevent bot detection
+- [2026-07-24 12:01:58] perf(selectors): resolve unexpected schema truncation in data extraction engine
