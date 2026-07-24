@@ -21,3 +21,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-07-22 22:08:48] fix(selectors): implement rate limiting queue to prevent bot detection
 - [2026-07-24 12:01:58] perf(selectors): resolve unexpected schema truncation in data extraction engine
 - [2026-07-24 13:09:58] fix(headless): add headless browser user-agent rotation policy
+- [2026-07-24 19:54:35] chore(proxy): add headless browser user-agent rotation policy
