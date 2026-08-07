@@ -23,3 +23,5 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-07-24 13:09:58] fix(headless): add headless browser user-agent rotation policy
 - [2026-07-24 19:54:35] chore(proxy): add headless browser user-agent rotation policy
 - [2026-07-30 14:30:49] perf(resilience): decouple bot configuration parser from task runner engine
+- **2026-08-07 12:57:12**: `docs(session): handle DOM mutation race conditions in automated form fill`
+  *Updated specifications and documentation details.*
