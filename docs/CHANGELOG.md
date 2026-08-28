@@ -27,3 +27,5 @@ Automation bots, headless browser instances, and scraper worker updates.
   *Updated specifications and documentation details.*
 - [2026-08-14 22:33:53] fix(selectors): implement rate limiting queue to prevent bot detection
 - [2026-08-28 19:24:08] fix(session): implement automated session renewal with token refresh
+- **2026-08-28 22:30:55**: `docs(proxy): optimize worker process concurrency pool under heavy batch load`
+  *Updated specifications and documentation details.*
