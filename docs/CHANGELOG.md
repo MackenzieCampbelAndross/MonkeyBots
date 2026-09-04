@@ -30,3 +30,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - **2026-08-28 22:30:55**: `docs(proxy): optimize worker process concurrency pool under heavy batch load`
   *Updated specifications and documentation details.*
 - [2026-09-02 17:04:15] chore(reporting): optimize worker process concurrency pool under heavy batch load
+- [2026-09-04 19:53:02] perf(selectors): implement JSON metrics emission for bot execution telemetry
