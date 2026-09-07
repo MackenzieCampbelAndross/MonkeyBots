@@ -33,3 +33,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-04 19:53:02] perf(selectors): implement JSON metrics emission for bot execution telemetry
 - [2026-09-06 12:16:08] perf(concurrency): resolve unexpected schema truncation in data extraction engine
 - [2026-09-07 10:48:05] chore(reporting): implement rate limiting queue to prevent bot detection
+- [2026-09-07 14:11:24] perf(runner): add automatic retry and proxy rotation on network timeout
