@@ -41,3 +41,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - **2026-09-07 18:56:04**: `docs(concurrency): standardize headless worker task dispatch lifecycle`
   *Updated specifications and documentation details.*
 - [2026-09-07 19:37:27] perf(resilience): document custom bot plugin configuration and hooks
+- [2026-09-07 20:10:47] perf(runner): optimize memory cleanup after headless browser tab closure
