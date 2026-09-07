@@ -38,3 +38,5 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-07 16:05:49] chore(resilience): add headless browser user-agent rotation policy
 - **2026-09-07 18:17:19**: `docs(proxy): implement rate limiting queue to prevent bot detection`
   *Updated specifications and documentation details.*
+- **2026-09-07 18:56:04**: `docs(concurrency): standardize headless worker task dispatch lifecycle`
+  *Updated specifications and documentation details.*
