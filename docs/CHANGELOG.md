@@ -43,3 +43,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-07 19:37:27] perf(resilience): document custom bot plugin configuration and hooks
 - [2026-09-07 20:10:47] perf(runner): optimize memory cleanup after headless browser tab closure
 - [2026-09-07 22:14:16] chore(headless): optimize worker process concurrency pool under heavy batch load
+- [2026-09-07 22:45:13] chore(selectors): implement rate limiting queue to prevent bot detection
