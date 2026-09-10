@@ -45,3 +45,5 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-07 22:14:16] chore(headless): optimize worker process concurrency pool under heavy batch load
 - [2026-09-07 22:45:13] chore(selectors): implement rate limiting queue to prevent bot detection
 - [2026-09-09 12:25:53] perf(session): update dynamic CSS selector fallback strategy for UI bot
+- **2026-09-10 16:37:17**: `docs(selectors): optimize memory cleanup after headless browser tab closure`
+  *Updated specifications and documentation details.*
