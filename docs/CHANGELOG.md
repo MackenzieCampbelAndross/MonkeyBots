@@ -47,3 +47,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-09 12:25:53] perf(session): update dynamic CSS selector fallback strategy for UI bot
 - **2026-09-10 16:37:17**: `docs(selectors): optimize memory cleanup after headless browser tab closure`
   *Updated specifications and documentation details.*
+- [2026-09-15 15:36:00] fix(runner): optimize memory cleanup after headless browser tab closure
