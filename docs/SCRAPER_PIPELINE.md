@@ -9,3 +9,5 @@ Dynamic DOM mutation listeners, selector fallbacks, and schema validation.
   *Updated specifications and documentation details.*
 - **2026-09-07 18:44:02**: `docs(bot): document custom bot plugin configuration and hooks`
   *Updated specifications and documentation details.*
+- **2026-09-17 15:49:56**: `docs(runner): document custom bot plugin configuration and hooks`
+  *Updated specifications and documentation details.*
