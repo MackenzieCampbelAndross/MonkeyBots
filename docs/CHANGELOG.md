@@ -56,3 +56,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-17 14:40:13] chore(concurrency): update dynamic CSS selector fallback strategy for UI bot
 - [2026-09-17 14:55:18] chore(runner): add screenshot capture on task failure for diagnostic logging
 - [2026-09-17 16:06:16] chore(reporting): implement rate limiting queue to prevent bot detection
+- [2026-09-17 16:47:45] chore(selectors): implement automated session renewal with token refresh
