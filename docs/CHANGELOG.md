@@ -49,3 +49,4 @@ Automation bots, headless browser instances, and scraper worker updates.
   *Updated specifications and documentation details.*
 - [2026-09-15 15:36:00] fix(runner): optimize memory cleanup after headless browser tab closure
 - [2026-09-17 10:37:06] chore(runner): document custom bot plugin configuration and hooks
+- [2026-09-17 11:08:23] fix(proxy): implement JSON metrics emission for bot execution telemetry
