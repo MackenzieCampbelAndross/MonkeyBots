@@ -53,3 +53,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-17 11:21:40] fix(reporting): standardize headless worker task dispatch lifecycle
 - [2026-09-17 11:51:59] fix(selectors): standardize headless worker task dispatch lifecycle
 - [2026-09-17 12:05:28] fix(concurrency): implement JSON metrics emission for bot execution telemetry
+- [2026-09-17 14:40:13] chore(concurrency): update dynamic CSS selector fallback strategy for UI bot
