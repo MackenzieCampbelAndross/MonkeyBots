@@ -71,3 +71,4 @@ Automation bots, headless browser instances, and scraper worker updates.
   *Updated specifications and documentation details.*
 - [2026-09-24 14:53:21] perf(concurrency): add headless browser user-agent rotation policy
 - [2026-09-24 20:29:36] chore(reporting): implement JSON metrics emission for bot execution telemetry
+- [2026-09-24 21:07:05] fix(resilience): optimize worker process concurrency pool under heavy batch load
