@@ -62,3 +62,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-24 09:58:16] fix(selectors): optimize memory cleanup after headless browser tab closure
 - [2026-09-24 10:08:44] perf(resilience): implement automated session renewal with token refresh
 - [2026-09-24 12:00:01] fix(runner): implement automated session renewal with token refresh
+- [2026-09-24 12:19:12] fix(resilience): implement JSON metrics emission for bot execution telemetry
