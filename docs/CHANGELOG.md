@@ -69,3 +69,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-24 13:47:00] chore(session): resolve unexpected schema truncation in data extraction engine
 - **2026-09-24 14:28:29**: `docs(concurrency): add automatic retry and proxy rotation on network timeout`
   *Updated specifications and documentation details.*
+- [2026-09-24 14:53:21] perf(concurrency): add headless browser user-agent rotation policy
