@@ -59,3 +59,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-17 16:47:45] chore(selectors): implement automated session renewal with token refresh
 - **2026-09-17 18:46:21**: `docs(proxy): standardize headless worker task dispatch lifecycle`
   *Updated specifications and documentation details.*
+- [2026-09-24 09:58:16] fix(selectors): optimize memory cleanup after headless browser tab closure
