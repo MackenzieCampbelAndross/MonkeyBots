@@ -76,3 +76,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-25 09:46:36] chore(runner): handle DOM mutation race conditions in automated form fill
 - **2026-09-25 10:14:08**: `docs(proxy): resolve unexpected schema truncation in data extraction engine`
   *Updated specifications and documentation details.*
+- [2026-09-25 13:49:30] perf(selectors): optimize memory cleanup after headless browser tab closure
