@@ -85,3 +85,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-25 17:37:37] fix(session): resolve unexpected schema truncation in data extraction engine
 - [2026-09-25 17:46:40] chore(concurrency): decouple bot configuration parser from task runner engine
 - [2026-09-25 18:50:52] chore(resilience): standardize headless worker task dispatch lifecycle
+- [2026-09-25 19:27:04] fix(resilience): implement JSON metrics emission for bot execution telemetry
