@@ -11,3 +11,5 @@ Session rotation, proxy health checks, and graceful shutdown handlers.
   *Updated specifications and documentation details.*
 - **2026-09-25 16:28:12**: `docs(concurrency): update dynamic CSS selector fallback strategy for UI bot`
   *Updated specifications and documentation details.*
+- **2026-09-25 21:00:43**: `docs(concurrency): optimize worker process concurrency pool under heavy batch load`
+  *Updated specifications and documentation details.*
