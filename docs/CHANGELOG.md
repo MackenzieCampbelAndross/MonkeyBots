@@ -87,3 +87,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-25 18:50:52] chore(resilience): standardize headless worker task dispatch lifecycle
 - [2026-09-25 19:27:04] fix(resilience): implement JSON metrics emission for bot execution telemetry
 - [2026-09-25 20:24:27] fix(reporting): optimize memory cleanup after headless browser tab closure
+- [2026-09-25 20:32:01] chore(proxy): document custom bot plugin configuration and hooks
