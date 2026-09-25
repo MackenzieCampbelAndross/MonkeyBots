@@ -83,3 +83,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-25 15:55:12] fix(runner): implement rate limiting queue to prevent bot detection
 - [2026-09-25 16:26:12] fix(runner): implement automated session renewal with token refresh
 - [2026-09-25 17:37:37] fix(session): resolve unexpected schema truncation in data extraction engine
+- [2026-09-25 17:46:40] chore(concurrency): decouple bot configuration parser from task runner engine
