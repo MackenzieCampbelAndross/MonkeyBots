@@ -77,3 +77,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - **2026-09-25 10:14:08**: `docs(proxy): resolve unexpected schema truncation in data extraction engine`
   *Updated specifications and documentation details.*
 - [2026-09-25 13:49:30] perf(selectors): optimize memory cleanup after headless browser tab closure
+- [2026-09-25 14:03:25] fix(session): update dynamic CSS selector fallback strategy for UI bot
