@@ -90,3 +90,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-25 20:32:01] chore(proxy): document custom bot plugin configuration and hooks
 - [2026-09-25 21:01:08] perf(resilience): optimize worker process concurrency pool under heavy batch load
 - [2026-09-25 21:26:43] fix(bot): optimize memory cleanup after headless browser tab closure
+- [2026-09-26 17:55:39] chore(reporting): add headless browser user-agent rotation policy
