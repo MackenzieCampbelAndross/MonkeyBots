@@ -95,3 +95,4 @@ Automation bots, headless browser instances, and scraper worker updates.
   *Updated specifications and documentation details.*
 - [2026-09-28 12:04:58] fix(bot): add headless browser user-agent rotation policy
 - [2026-09-28 12:23:32] fix(session): add headless browser user-agent rotation policy
+- [2026-09-28 15:00:09] perf(headless): add headless browser user-agent rotation policy
