@@ -100,3 +100,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-28 19:13:12] fix(resilience): handle DOM mutation race conditions in automated form fill
 - **2026-09-28 20:58:27**: `docs(selectors): optimize worker process concurrency pool under heavy batch load`
   *Updated specifications and documentation details.*
+- [2026-09-28 22:17:31] fix(bot): optimize memory cleanup after headless browser tab closure
