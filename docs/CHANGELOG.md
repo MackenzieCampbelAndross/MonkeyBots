@@ -97,3 +97,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-09-28 12:23:32] fix(session): add headless browser user-agent rotation policy
 - [2026-09-28 15:00:09] perf(headless): add headless browser user-agent rotation policy
 - [2026-09-28 15:32:43] fix(headless): update dynamic CSS selector fallback strategy for UI bot
+- [2026-09-28 19:13:12] fix(resilience): handle DOM mutation race conditions in automated form fill
