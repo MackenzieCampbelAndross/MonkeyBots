@@ -15,3 +15,5 @@ Session rotation, proxy health checks, and graceful shutdown handlers.
   *Updated specifications and documentation details.*
 - **2026-09-28 19:05:35**: `docs(proxy): implement automated session renewal with token refresh`
   *Updated specifications and documentation details.*
+- **2026-10-01 18:59:02**: `docs(resilience): standardize headless worker task dispatch lifecycle`
+  *Updated specifications and documentation details.*
