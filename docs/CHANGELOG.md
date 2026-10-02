@@ -108,3 +108,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-02 13:30:05] chore(headless): add automatic retry and proxy rotation on network timeout
 - [2026-10-02 14:18:38] chore(resilience): decouple bot configuration parser from task runner engine
 - [2026-10-02 15:05:14] chore(runner): implement rate limiting queue to prevent bot detection
+- [2026-10-02 15:28:54] chore(concurrency): document custom bot plugin configuration and hooks
