@@ -19,3 +19,5 @@ Dynamic DOM mutation listeners, selector fallbacks, and schema validation.
   *Updated specifications and documentation details.*
 - **2026-09-28 13:43:37**: `docs(concurrency): handle DOM mutation race conditions in automated form fill`
   *Updated specifications and documentation details.*
+- **2026-10-02 21:58:04**: `docs(selectors): add screenshot capture on task failure for diagnostic logging`
+  *Updated specifications and documentation details.*
