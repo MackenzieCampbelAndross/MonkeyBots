@@ -17,3 +17,5 @@ Session rotation, proxy health checks, and graceful shutdown handlers.
   *Updated specifications and documentation details.*
 - **2026-10-01 18:59:02**: `docs(resilience): standardize headless worker task dispatch lifecycle`
   *Updated specifications and documentation details.*
+- **2026-10-02 19:52:16**: `docs(bot): add screenshot capture on task failure for diagnostic logging`
+  *Updated specifications and documentation details.*
