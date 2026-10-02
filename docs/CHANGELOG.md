@@ -106,3 +106,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-02 09:49:55] perf(bot): optimize worker process concurrency pool under heavy batch load
 - [2026-10-02 10:07:24] fix(proxy): add headless browser user-agent rotation policy
 - [2026-10-02 13:30:05] chore(headless): add automatic retry and proxy rotation on network timeout
+- [2026-10-02 14:18:38] chore(resilience): decouple bot configuration parser from task runner engine
