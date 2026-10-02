@@ -113,3 +113,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-02 16:42:49] chore(headless): resolve unexpected schema truncation in data extraction engine
 - [2026-10-02 18:05:20] fix(runner): document custom bot plugin configuration and hooks
 - [2026-10-02 18:07:24] chore(resilience): update dynamic CSS selector fallback strategy for UI bot
+- [2026-10-02 20:34:16] fix(concurrency): update dynamic CSS selector fallback strategy for UI bot
