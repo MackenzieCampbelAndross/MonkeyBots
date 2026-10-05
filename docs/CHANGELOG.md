@@ -115,3 +115,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-02 18:07:24] chore(resilience): update dynamic CSS selector fallback strategy for UI bot
 - [2026-10-02 20:34:16] fix(concurrency): update dynamic CSS selector fallback strategy for UI bot
 - [2026-10-02 21:21:18] fix(selectors): handle DOM mutation race conditions in automated form fill
+- [2026-10-05 11:50:11] chore(reporting): add screenshot capture on task failure for diagnostic logging
