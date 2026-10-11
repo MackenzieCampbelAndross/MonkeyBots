@@ -120,3 +120,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - **2026-10-07 19:52:18**: `docs(proxy): add screenshot capture on task failure for diagnostic logging`
   *Updated specifications and documentation details.*
 - [2026-10-11 18:58:46] chore(headless): optimize memory cleanup after headless browser tab closure
+- [2026-10-11 20:32:33] fix(proxy): add automatic retry and proxy rotation on network timeout
