@@ -124,3 +124,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-12 13:07:52] fix(session): implement rate limiting queue to prevent bot detection
 - [2026-10-12 13:38:26] chore(session): resolve unexpected schema truncation in data extraction engine
 - [2026-10-12 15:23:53] chore(session): optimize memory cleanup after headless browser tab closure
+- [2026-10-12 19:31:50] chore(bot): add screenshot capture on task failure for diagnostic logging
