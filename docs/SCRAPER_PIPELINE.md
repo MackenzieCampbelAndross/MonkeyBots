@@ -21,3 +21,5 @@ Dynamic DOM mutation listeners, selector fallbacks, and schema validation.
   *Updated specifications and documentation details.*
 - **2026-10-02 21:58:04**: `docs(selectors): add screenshot capture on task failure for diagnostic logging`
   *Updated specifications and documentation details.*
+- **2026-10-12 22:05:00**: `docs(proxy): update dynamic CSS selector fallback strategy for UI bot`
+  *Updated specifications and documentation details.*
