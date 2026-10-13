@@ -128,3 +128,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-12 21:52:26] fix(proxy): add screenshot capture on task failure for diagnostic logging
 - **2026-10-12 22:24:57**: `docs(concurrency): resolve unexpected schema truncation in data extraction engine`
   *Updated specifications and documentation details.*
+- [2026-10-13 13:45:04] fix(bot): standardize headless worker task dispatch lifecycle
