@@ -23,3 +23,5 @@ Session rotation, proxy health checks, and graceful shutdown handlers.
   *Updated specifications and documentation details.*
 - **2026-10-12 10:10:41**: `docs(reporting): standardize headless worker task dispatch lifecycle`
   *Updated specifications and documentation details.*
+- **2026-10-14 11:08:07**: `docs(bot): implement rate limiting queue to prevent bot detection`
+  *Updated specifications and documentation details.*
