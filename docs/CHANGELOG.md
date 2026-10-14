@@ -135,3 +135,5 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-14 16:20:18] chore(bot): add screenshot capture on task failure for diagnostic logging
 - [2026-10-14 17:51:15] chore(bot): update dynamic CSS selector fallback strategy for UI bot
 - [2026-10-14 18:52:51] chore(bot): add headless browser user-agent rotation policy
+- **2026-10-14 19:26:45**: `docs(reporting): add automatic retry and proxy rotation on network timeout`
+  *Updated specifications and documentation details.*
