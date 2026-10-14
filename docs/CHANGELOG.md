@@ -138,3 +138,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - **2026-10-14 19:26:45**: `docs(reporting): add automatic retry and proxy rotation on network timeout`
   *Updated specifications and documentation details.*
 - [2026-10-14 19:38:39] chore(bot): implement rate limiting queue to prevent bot detection
+- [2026-10-14 19:54:33] chore(headless): optimize worker process concurrency pool under heavy batch load
