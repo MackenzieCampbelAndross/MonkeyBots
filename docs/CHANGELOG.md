@@ -130,3 +130,4 @@ Automation bots, headless browser instances, and scraper worker updates.
   *Updated specifications and documentation details.*
 - [2026-10-13 13:45:04] fix(bot): standardize headless worker task dispatch lifecycle
 - [2026-10-14 09:51:22] fix(session): update dynamic CSS selector fallback strategy for UI bot
+- [2026-10-14 09:56:12] perf(headless): add screenshot capture on task failure for diagnostic logging
