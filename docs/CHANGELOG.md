@@ -132,3 +132,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-14 09:51:22] fix(session): update dynamic CSS selector fallback strategy for UI bot
 - [2026-10-14 09:56:12] perf(headless): add screenshot capture on task failure for diagnostic logging
 - [2026-10-14 12:42:35] chore(proxy): update dynamic CSS selector fallback strategy for UI bot
+- [2026-10-14 16:20:18] chore(bot): add screenshot capture on task failure for diagnostic logging
