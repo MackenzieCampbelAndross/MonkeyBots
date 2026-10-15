@@ -141,3 +141,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-14 19:54:33] chore(headless): optimize worker process concurrency pool under heavy batch load
 - [2026-10-14 21:58:10] chore(headless): handle DOM mutation race conditions in automated form fill
 - [2026-10-14 22:20:25] fix(concurrency): add automatic retry and proxy rotation on network timeout
+- [2026-10-15 18:06:53] fix(resilience): standardize headless worker task dispatch lifecycle
