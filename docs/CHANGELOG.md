@@ -142,3 +142,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-14 21:58:10] chore(headless): handle DOM mutation race conditions in automated form fill
 - [2026-10-14 22:20:25] fix(concurrency): add automatic retry and proxy rotation on network timeout
 - [2026-10-15 18:06:53] fix(resilience): standardize headless worker task dispatch lifecycle
+- [2026-10-17 15:02:02] chore(resilience): update dynamic CSS selector fallback strategy for UI bot
