@@ -145,3 +145,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-17 15:02:02] chore(resilience): update dynamic CSS selector fallback strategy for UI bot
 - [2026-10-17 20:08:50] fix(selectors): resolve unexpected schema truncation in data extraction engine
 - [2026-10-22 11:41:04] fix(headless): optimize memory cleanup after headless browser tab closure
+- [2026-10-23 16:16:37] fix(concurrency): add headless browser user-agent rotation policy
