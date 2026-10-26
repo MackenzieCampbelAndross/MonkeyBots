@@ -149,3 +149,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - **2026-10-24 11:19:43**: `docs(session): add screenshot capture on task failure for diagnostic logging`
   *Updated specifications and documentation details.*
 - [2026-10-26 19:59:37] chore(resilience): optimize memory cleanup after headless browser tab closure
+- [2026-10-26 20:53:58] fix(proxy): decouple bot configuration parser from task runner engine
