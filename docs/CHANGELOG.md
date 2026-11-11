@@ -156,3 +156,4 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-10-30 20:26:41] chore(selectors): implement automated session renewal with token refresh
 - [2026-11-02 14:05:28] chore(session): optimize worker process concurrency pool under heavy batch load
 - [2026-11-11 10:22:36] perf(selectors): resolve unexpected schema truncation in data extraction engine
+- [2026-11-11 13:15:58] fix(proxy): implement JSON metrics emission for bot execution telemetry
