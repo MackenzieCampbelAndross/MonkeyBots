@@ -25,3 +25,5 @@ Dynamic DOM mutation listeners, selector fallbacks, and schema validation.
   *Updated specifications and documentation details.*
 - **2026-11-02 15:21:55**: `docs(selectors): document custom bot plugin configuration and hooks`
   *Updated specifications and documentation details.*
+- **2026-11-11 11:49:39**: `docs(resilience): update dynamic CSS selector fallback strategy for UI bot`
+  *Updated specifications and documentation details.*
