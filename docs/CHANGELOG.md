@@ -159,3 +159,5 @@ Automation bots, headless browser instances, and scraper worker updates.
 - [2026-11-11 13:15:58] fix(proxy): implement JSON metrics emission for bot execution telemetry
 - [2026-11-13 13:08:54] chore(session): add headless browser user-agent rotation policy
 - [2026-11-13 14:33:58] chore(bot): resolve unexpected schema truncation in data extraction engine
+- **2026-11-13 21:07:22**: `docs(runner): add screenshot capture on task failure for diagnostic logging`
+  *Updated specifications and documentation details.*
