@@ -166,7 +166,7 @@ async def get_synchronization_metrics():
         "step_count": live_engine.step_count,
         "real_time_factor": round(live_engine.real_time_factor, 2),
         "telemetry_rate_hz": 60.0,
-        "sync_latency_ms": 2.1,  # Sub-frame measured IPC websocket synchronization latency
+        "sync_latency_ms": round(live_engine.last_step_latency_ms, 2),
         "contacts_count": contacts_count,
         "dof": live_engine.model.nv if live_engine.model else 0,
     }

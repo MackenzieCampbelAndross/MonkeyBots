@@ -1,6 +1,10 @@
 <mujoco model="MonkeyBots_SCARA_4DOF">
   <compiler angle="radian" coordinate="local" autolimits="true"/>
   <option timestep="0.001" gravity="0 0 -9.81" integrator="RK4"/>
+  <default>
+    <joint damping="1.5" armature="0.08"/>
+    <geom friction="0.8 0.1 0.1" margin="0.001"/>
+  </default>
   <asset>
     <material name="metal_gray" rgba="0.75 0.78 0.82 1.0" roughness="0.3" metallic="0.7"/>
     <material name="accent_blue" rgba="0.12 0.53 0.90 1.0" roughness="0.2"/>

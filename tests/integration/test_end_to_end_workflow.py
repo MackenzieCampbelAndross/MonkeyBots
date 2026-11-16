@@ -54,6 +54,7 @@ from core.monkeybots.planning import JointTrajectory, InterpolationType
 from core.monkeybots.control import RobotMotionController, PIDController
 from core.monkeybots.simulation.engine import SimulationEngine, SimulationConfig
 from core.monkeybots.simulation.collision import CollisionTracker, CollisionEvent, ContactPointData
+from core.monkeybots.simulation.manipulation import ManipulationController, PickAndPlaceRequest
 from core.monkeybots.analytics.telemetry_buffer import SimulationTelemetryBuffer, execute_and_record_run
 from core.monkeybots.analytics.metrics import compute_analytics_metrics
 from core.monkeybots.analytics.report_generator import generate_markdown_report, generate_html_report
@@ -335,8 +336,49 @@ class TestEndToEndWorkflow:
         events = engine.get_collision_events()
         assert isinstance(events, list)
 
-    def test_step_15_collect_telemetry(self):
-        """Step 15: Collect continuous high-resolution telemetry and compute tracking errors."""
+    def test_step_15_grasp_object(self):
+        """Step 15: Actuate parallel gripper to grasp manipulable object via contact physics."""
+        workcell_path = Path("projects/default_6dof_arm/workcell.mjcf")
+        assert workcell_path.exists()
+        engine = SimulationEngine()
+        engine.load_from_xml(workcell_path.read_text(encoding="utf-8"))
+        engine.start()
+        engine.step(10)
+
+        controller = ManipulationController(engine)
+        # Verify initial object position on table
+        pos_init = controller.get_object_position("manipulable_box")
+        assert pos_init is not None
+        assert pos_init[2] > 0.1  # Resting on table
+
+        # Actuate gripper with 18N squeeze force
+        contact_forces = controller.close_gripper(force_n=18.0, steps=100)
+        assert isinstance(contact_forces, dict)
+        assert "total_normal" in contact_forces
+
+    def test_step_16_lift_and_release_object(self):
+        """Step 16: Lift manipulable object using contact friction and release it."""
+        workcell_path = Path("projects/default_6dof_arm/workcell.mjcf")
+        engine = SimulationEngine()
+        engine.load_from_xml(workcell_path.read_text(encoding="utf-8"))
+        engine.start()
+
+        controller = ManipulationController(engine)
+        plan = PickAndPlaceRequest(
+            pick_pos=[0.45, 0.0, 0.225],
+            place_pos=[0.35, -0.20, 0.225],
+            lift_height=0.12,
+            grip_force=20.0,
+        )
+        report = controller.execute_pick_and_place(plan)
+        assert isinstance(report, dict)
+        assert "execution_time_s" in report
+        assert "phases" in report
+        assert "final_object_pos" in report
+        assert len(report["phases"]) > 0
+
+    def test_step_17_collect_telemetry(self):
+        """Step 17: Collect continuous high-resolution telemetry and compute tracking errors."""
         buffer = execute_and_record_run(
             duration=0.5,
             timestep=0.002,
@@ -349,8 +391,8 @@ class TestEndToEndWorkflow:
         assert metrics.real_time_factor > 0.0
         assert metrics.total_steps == buffer.count()
 
-    def test_step_16_run_validation_tests(self):
-        """Step 16: Execute automated engineering validation suite."""
+    def test_step_18_run_validation_tests(self):
+        """Step 18: Execute automated engineering validation suite."""
         res = client.get("/api/v1/validation/suite")
         assert res.status_code == 200
         suite_res = res.json()
@@ -359,8 +401,8 @@ class TestEndToEndWorkflow:
         assert len(suite_res["test_cases"]) == 10
         assert suite_res["compliance_percentage"] >= 90.0
 
-    def test_step_17_generate_engineering_report(self):
-        """Step 17: Generate professional engineering reports (Markdown, HTML with SVG, CSV, JSON)."""
+    def test_step_19_generate_engineering_report(self):
+        """Step 19: Generate professional engineering reports (Markdown, HTML with SVG, CSV, JSON)."""
         buffer = execute_and_record_run(
             duration=0.5,
             timestep=0.002,
@@ -393,8 +435,8 @@ class TestEndToEndWorkflow:
         assert "time,q1,q2" in csv_str
         assert len(csv_str.splitlines()) > 50
 
-    def test_step_18_save_project(self):
-        """Step 18: Save the project with atomic file guarantees and verify structure."""
+    def test_step_20_save_project(self):
+        """Step 20: Save the project with atomic file guarantees and verify structure."""
         manifest = self.pm.get_project(self.project_id)
         assert manifest is not None
         # Add valid trajectory record to project
@@ -417,24 +459,36 @@ class TestEndToEndWorkflow:
         tmp_files = list(project_path.glob("*.tmp*"))
         assert len(tmp_files) == 0
 
-    def test_step_19_close_application(self):
-        """Step 19: Simulate application close, freeing active engines and ensuring clean teardown."""
+    def test_step_21_close_application(self):
+        """Step 21: Simulate application close, freeing active engines and ensuring clean teardown."""
         # Reset live simulation engine
         res = client.post("/api/v1/simulation/control", json={"action": "RESET"})
         assert res.status_code == 200
         assert res.json()["state"]["status"] == "PAUSED"
         assert res.json()["sim_time"] == 0.0
 
-    def test_step_20_reopen_project_and_verify_integrity(self):
-        """Step 20: Reopen the saved project and verify cryptographic integrity, asset completeness, and data consistency."""
+    def test_step_22_reopen_project(self):
+        """Step 22: Reopen the saved project and confirm model and trajectory data."""
         reopened = self.pm.get_project(self.project_id)
         assert reopened is not None
         assert reopened.metadata.name == self.project_name
         assert len(reopened.trajectories) == 1
         assert reopened.trajectories[0].name == "E2E_Trajectory_Quintic"
 
-        # Validate project integrity
-        report = self.pm.validate_project(self.project_id)
-        assert report.is_valid is True
-        assert report.manifest_valid is True
-        assert report.missing_assets_count == 0
+    def test_step_23_verify_data_integrity_across_robots(self):
+        """Step 23: Verify data integrity for the 6-DOF project, SCARA robot, and Dual-arm workcell."""
+        # 1. Audit Primary 6-DOF Project
+        rep_arm = self.pm.validate_project(self.project_id)
+        assert rep_arm.is_valid is True
+        assert rep_arm.manifest_valid is True
+        assert rep_arm.missing_assets_count == 0
+
+        # 2. Audit Sample Projects in standard projects/ directory
+        default_pm = ProjectManager(projects_dir=Path("projects"))
+        rep_scara = default_pm.validate_project("scara_assembly_robot")
+        assert rep_scara.is_valid is True
+        assert rep_scara.manifest_valid is True
+
+        rep_dual = default_pm.validate_project("precision_dual_arm_workcell")
+        assert rep_dual.is_valid is True
+        assert rep_dual.manifest_valid is True

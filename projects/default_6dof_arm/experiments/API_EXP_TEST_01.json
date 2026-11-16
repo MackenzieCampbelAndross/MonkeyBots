@@ -62,7 +62,7 @@
     "v_max": 2.0,
     "a_max": 4.0
   },
-  "timestamp": "2026-11-16T17:17:22.848316+00:00",
+  "timestamp": "2026-11-16T19:20:09.476759+00:00",
   "metrics": {
     "position_rmse_rad": 0.140635,
     "max_position_error_rad": 1.19688,
@@ -82,8 +82,8 @@
     "energy_final_j": 110.274,
     "energy_drift_j": 110.274,
     "collision_events_count": 0,
-    "simulation_execution_time_s": 0.0978,
-    "real_time_factor": 8.18,
+    "simulation_execution_time_s": 0.0802,
+    "real_time_factor": 9.97,
     "solver_iterations_avg": 0.1
   },
   "time_series": {
@@ -1460,5 +1460,5 @@
       110.445
     ]
   },
-  "summary": "Executed API Test Run over 0.80s (400 steps). Overall Tracking RMSE: 140.64 mrad, Peak Torque: 150.00 Nm, Energy Drift: 110.274 J, RTF: 8.18x."
+  "summary": "Executed API Test Run over 0.80s (400 steps). Overall Tracking RMSE: 140.64 mrad, Peak Torque: 150.00 Nm, Energy Drift: 110.274 J, RTF: 9.97x."
 }

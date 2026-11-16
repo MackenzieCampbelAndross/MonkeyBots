@@ -46,6 +46,7 @@ class SimulationEngine:
         self.sim_time: float = 0.0
         self._last_step_wall_time: float = time.perf_counter()
         self.real_time_factor: float = 1.0
+        self.last_step_latency_ms: float = 1.2
 
         # Actuator command buffers
         self._target_qpos: Optional[np.ndarray] = None
@@ -186,6 +187,7 @@ class SimulationEngine:
             return False
 
         dt = self.model.opt.timestep
+        t_step_start = time.perf_counter()
 
         for _ in range(n):
             # Apply Joint Actuation / PID Controls if enabled
@@ -207,7 +209,7 @@ class SimulationEngine:
                 logger.error(f"Simulation diverged at t={self.sim_time:.4f}s: {reason}")
                 return False
 
-        # Compute Real-Time Factor
+        # Compute Real-Time Factor & Step Execution Latency
         now = time.perf_counter()
         elapsed_wall = now - self._last_step_wall_time
         if elapsed_wall > 0:
@@ -215,6 +217,7 @@ class SimulationEngine:
             instant_rtf = sim_elapsed / elapsed_wall
             self.real_time_factor = 0.95 * self.real_time_factor + 0.05 * instant_rtf
         self._last_step_wall_time = now
+        self.last_step_latency_ms = max(0.01, round((now - t_step_start) * 1000.0, 3))
 
         return True
 
