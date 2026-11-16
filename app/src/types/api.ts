@@ -238,3 +238,129 @@ export interface TrajectoryPreset {
   description: string;
   waypoints: number[][];
 }
+
+// Stage 10: Validation Laboratory & Repeatable Experiments Types
+export type ValidationStatus = "VERIFIED" | "FAILED" | "NOT_IMPLEMENTED" | "KNOWN_LIMITATION";
+
+export interface ValidationMetricData {
+  name: string;
+  expected_value: number;
+  actual_value: number;
+  difference: number;
+  relative_error?: number;
+  tolerance: number;
+  unit: string;
+  status: ValidationStatus;
+  notes?: string;
+}
+
+export interface ValidationTestCaseData {
+  id: string;
+  category: string;
+  name: string;
+  description: string;
+  standard_reference: string;
+  status: ValidationStatus;
+  metrics: ValidationMetricData[];
+  execution_time_ms: number;
+  failure_reason?: string;
+}
+
+export interface ValidationSuiteReportData {
+  suite_name: string;
+  version: string;
+  timestamp: string;
+  overall_status: ValidationStatus;
+  total_tests: number;
+  verified_count: number;
+  failed_count: number;
+  known_limitations_count: number;
+  not_implemented_count: number;
+  compliance_percentage: number;
+  test_cases: ValidationTestCaseData[];
+  system_info: Record<string, any>;
+}
+
+export interface ExperimentConfigData {
+  id: string;
+  name: string;
+  description?: string;
+  robot_id?: string;
+  timestep: number;
+  duration: number;
+  controller_type?: string;
+  kp: number[];
+  ki: number[];
+  kd: number[];
+  trajectory_type: string;
+  waypoints: number[][];
+  v_max: number;
+  a_max: number;
+}
+
+export interface ExperimentMetricsData {
+  position_rmse_rad: number;
+  max_position_error_rad: number;
+  joint_rmse_rad: number[];
+  max_velocity_rad_s: number;
+  max_acceleration_rad_s2: number;
+  max_applied_torque_nm: number;
+  rms_torque_nm: number;
+  energy_initial_j: number;
+  energy_final_j: number;
+  energy_drift_j: number;
+  collision_events_count: number;
+  simulation_execution_time_s: number;
+  real_time_factor: number;
+  solver_iterations_avg: number;
+}
+
+export interface ExperimentResultData {
+  id: string;
+  config: ExperimentConfigData;
+  timestamp: string;
+  metrics: ExperimentMetricsData;
+  time_series: {
+    timestamps: number[];
+    q_actual: number[][];
+    q_target: number[][];
+    torques: number[][];
+    position_errors: number[][];
+    energies: number[];
+  };
+  summary: string;
+}
+
+export interface ExperimentSummaryItem {
+  id: string;
+  name: string;
+  timestamp: string;
+  duration: number;
+  position_rmse_mrad: number;
+  max_torque_nm: number;
+  energy_drift_j: number;
+}
+
+export interface ExperimentComparisonData {
+  experiment_ids: string[];
+  experiments: Array<{
+    id: string;
+    name: string;
+    timestamp: string;
+    timestep: number;
+    duration: number;
+    position_rmse_mrad: number;
+    max_position_error_mrad: number;
+    max_torque_nm: number;
+    rms_torque_nm: number;
+    energy_drift_j: number;
+    execution_time_s: number;
+    real_time_factor: number;
+  }>;
+  comparative_analysis: Record<string, {
+    delta_rmse_mrad: number;
+    delta_max_torque_nm: number;
+    delta_energy_drift_j: number;
+    rmse_improvement_percent: number;
+  }>;
+}

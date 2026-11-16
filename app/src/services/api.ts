@@ -2,7 +2,18 @@
  * MonkeyBots REST API Client
  */
 
-import type { HealthResponse, ProjectSummary, ProjectManifest, SimStatus } from "../types/api";
+import type {
+  HealthResponse,
+  ProjectSummary,
+  ProjectManifest,
+  SimStatus,
+  ValidationSuiteReportData,
+  ValidationTestCaseData,
+  ExperimentConfigData,
+  ExperimentResultData,
+  ExperimentSummaryItem,
+  ExperimentComparisonData,
+} from "../types/api";
 
 const BASE_URL = "http://127.0.0.1:8765/api/v1";
 
@@ -321,5 +332,68 @@ export async function executePickAndPlace(plan?: {
 export async function runManipulationBenchmarks(): Promise<any> {
   const res = await fetch(`${BASE_URL}/simulation/manipulation_benchmarks`, { method: "GET" });
   if (!res.ok) throw new Error("Failed to run manipulation benchmarks");
+  return res.json();
+}
+
+// Stage 10: Validation Laboratory & Repeatable Experiments APIs
+export async function fetchValidationSuite(): Promise<ValidationSuiteReportData> {
+  const res = await fetch(`${BASE_URL}/validation/suite`, { method: "GET" });
+  if (!res.ok) throw new Error(`Validation suite failed: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchValidationCapabilities(): Promise<{ capabilities: any[] }> {
+  const res = await fetch(`${BASE_URL}/validation/capabilities`, { method: "GET" });
+  if (!res.ok) throw new Error(`Failed to fetch capabilities: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchValidationCapability(capabilityId: string): Promise<ValidationTestCaseData> {
+  const res = await fetch(`${BASE_URL}/validation/capability/${capabilityId}`, { method: "GET" });
+  if (!res.ok) throw new Error(`Failed to run capability '${capabilityId}': ${res.status}`);
+  return res.json();
+}
+
+export async function fetchValidationReportMarkdown(): Promise<string> {
+  const res = await fetch(`${BASE_URL}/validation/report/markdown`, { method: "GET" });
+  if (!res.ok) throw new Error(`Failed to fetch Markdown validation report: ${res.status}`);
+  return res.text();
+}
+
+export async function fetchValidationExperiments(): Promise<{ experiments: ExperimentSummaryItem[] }> {
+  const res = await fetch(`${BASE_URL}/validation/experiments`, { method: "GET" });
+  if (!res.ok) throw new Error(`Failed to fetch experiments: ${res.status}`);
+  return res.json();
+}
+
+export async function runValidationExperiment(config: ExperimentConfigData): Promise<ExperimentResultData> {
+  const res = await fetch(`${BASE_URL}/validation/experiments/run`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Experiment execution failed" }));
+    throw new Error(err.detail || `Experiment failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchValidationExperimentDetails(experimentId: string): Promise<ExperimentResultData> {
+  const res = await fetch(`${BASE_URL}/validation/experiments/${experimentId}`, { method: "GET" });
+  if (!res.ok) throw new Error(`Failed to load experiment '${experimentId}': ${res.status}`);
+  return res.json();
+}
+
+export async function compareValidationExperiments(experimentIds: string[]): Promise<ExperimentComparisonData> {
+  const res = await fetch(`${BASE_URL}/validation/experiments/compare`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ experiment_ids: experimentIds }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Comparison failed" }));
+    throw new Error(err.detail || `Comparison failed: ${res.status}`);
+  }
   return res.json();
 }

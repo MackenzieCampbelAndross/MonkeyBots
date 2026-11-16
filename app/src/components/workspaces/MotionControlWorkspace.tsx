@@ -358,11 +358,10 @@ export const MotionControlWorkspace: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`py-1.5 rounded flex flex-col items-center justify-center space-y-0.5 font-semibold transition ${
-                  activeTab === tab.id
-                    ? "bg-amber-500 text-slate-950 shadow"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-                }`}
+                className={`py-1.5 rounded flex flex-col items-center justify-center space-y-0.5 font-semibold transition ${activeTab === tab.id
+                  ? "bg-amber-500 text-slate-950 shadow"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span className="text-[10px]">{tab.label}</span>
@@ -658,11 +657,10 @@ export const MotionControlWorkspace: React.FC = () => {
                   <div className="flex justify-between items-center text-slate-300 font-sans text-[11px] font-semibold">
                     <span>Response Stability</span>
                     <span
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                        stepResponse.is_stable
-                          ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                          : "bg-rose-950 text-rose-400 border border-rose-800"
-                      }`}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${stepResponse.is_stable
+                        ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                        : "bg-rose-950 text-rose-400 border border-rose-800"
+                        }`}
                     >
                       {stepResponse.stability}
                     </span>
@@ -823,9 +821,8 @@ export const MotionControlWorkspace: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-semibold text-slate-300">Status</span>
                     <span
-                      className={`px-1.5 py-0.5 rounded font-bold ${
-                        ikResult.converged ? "bg-emerald-950 text-emerald-400" : "bg-rose-950 text-rose-400"
-                      }`}
+                      className={`px-1.5 py-0.5 rounded font-bold ${ikResult.converged ? "bg-emerald-950 text-emerald-400" : "bg-rose-950 text-rose-400"
+                        }`}
                     >
                       {ikResult.status}
                     </span>
@@ -1183,11 +1180,10 @@ export const MotionControlWorkspace: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setInspectorTab(tab.id as any)}
-                className={`flex-1 py-1.5 px-1.5 rounded font-medium flex items-center justify-center space-x-1 transition ${
-                  inspectorTab === tab.id
-                    ? "bg-slate-800 text-sky-400 shadow-sm"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
+                className={`flex-1 py-1.5 px-1.5 rounded font-medium flex items-center justify-center space-x-1 transition ${inspectorTab === tab.id
+                  ? "bg-slate-800 text-sky-400 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span className="truncate">{tab.label}</span>
@@ -1307,9 +1303,8 @@ export const MotionControlWorkspace: React.FC = () => {
                         {row.map((val, cIdx) => (
                           <td
                             key={cIdx}
-                            className={`p-1.5 ${
-                              cIdx === 3 ? "text-emerald-400 font-bold bg-emerald-950/20" : "text-sky-300"
-                            }`}
+                            className={`p-1.5 ${cIdx === 3 ? "text-emerald-400 font-bold bg-emerald-950/20" : "text-sky-300"
+                              }`}
                           >
                             {val.toFixed(4)}
                           </td>
@@ -1345,9 +1340,8 @@ export const MotionControlWorkspace: React.FC = () => {
                         {row.map((val, cIdx) => (
                           <td
                             key={cIdx}
-                            className={`p-1 ${
-                              Math.abs(val) < 1e-4 ? "text-slate-700" : rIdx < 3 ? "text-sky-300" : "text-amber-300"
-                            }`}
+                            className={`p-1 ${Math.abs(val) < 1e-4 ? "text-slate-700" : rIdx < 3 ? "text-sky-300" : "text-amber-300"
+                              }`}
                           >
                             {val.toFixed(3)}
                           </td>
