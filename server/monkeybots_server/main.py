@@ -15,6 +15,7 @@ from server.monkeybots_server.router_simulation import router as simulation_rout
 from server.monkeybots_server.router_ws import router as ws_router
 from server.monkeybots_server.router_models import router as models_router
 from server.monkeybots_server.router_kinematics import router as kinematics_router
+from server.monkeybots_server.router_motion import router as motion_router
 
 log = get_logger("main")
 
@@ -71,6 +72,7 @@ app.include_router(simulation_router)
 app.include_router(ws_router)
 app.include_router(models_router)
 app.include_router(kinematics_router)
+app.include_router(motion_router)
 
 
 @app.get("/")

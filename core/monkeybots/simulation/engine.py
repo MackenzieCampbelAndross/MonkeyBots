@@ -7,7 +7,8 @@ energy accounting, and real-time state telemetry.
 import math
 import time
 import numpy as np
-from typing import List, Dict, Optional, Tuple, Callable
+from pathlib import Path
+from typing import List, Dict, Optional, Tuple, Callable, Union
 from pydantic import BaseModel, Field
 
 import mujoco
@@ -55,10 +56,15 @@ class SimulationEngine:
         self.ki = 0.5
         self._integral_error: Optional[np.ndarray] = None
 
-    def load_from_xml(self, xml_content: str):
-        """Loads and compiles an MJCF XML model string directly into MuJoCo."""
+    def load_from_xml(self, xml_content: Union[str, Path]):
+        """Loads and compiles an MJCF XML model string or file path directly into MuJoCo."""
         try:
-            self.model = mujoco.MjModel.from_xml_string(xml_content)
+            path = Path(xml_content)
+            if path.exists() and path.is_file():
+                content = path.read_text(encoding="utf-8")
+            else:
+                content = str(xml_content)
+            self.model = mujoco.MjModel.from_xml_string(content)
             self.data = mujoco.MjData(self.model)
 
             # Apply simulation parameters
@@ -136,10 +142,10 @@ class SimulationEngine:
         self.status = "PAUSED"
         logger.info("Simulation state reset to t=0.")
 
-    def step(self, n: int = 1) -> bool:
+    def step(self, n: int = 1, apply_internal_controllers: bool = True) -> bool:
         """
         Advances the simulation by n integration steps (n * dt seconds).
-        Applies internal joint PD/PID control torques.
+        Applies internal joint PD/PID control torques if apply_internal_controllers is True.
         Returns True if successful, False if numerical instability was detected.
         """
         if self.model is None or self.data is None:
@@ -148,8 +154,9 @@ class SimulationEngine:
         dt = self.model.opt.timestep
 
         for _ in range(n):
-            # Apply Joint Actuation / PID Controls
-            self._apply_joint_controllers(dt)
+            # Apply Joint Actuation / PID Controls if enabled
+            if apply_internal_controllers:
+                self._apply_joint_controllers(dt)
 
             # High-fidelity step
             mujoco.mj_step(self.model, self.data)

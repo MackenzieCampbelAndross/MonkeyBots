@@ -166,3 +166,76 @@ export async function fetchPosePresets(robotId: string = "default_6dof_arm"): Pr
   if (!res.ok) throw new Error("Failed to load pose presets");
   return res.json();
 }
+
+// Motion Planning & Control APIs
+export async function planTrajectory(params: {
+  waypoints: number[][];
+  interpolation?: string;
+  vMax?: number;
+  aMax?: number;
+  sampleDt?: number;
+}): Promise<any> {
+  const res = await fetch(`${BASE_URL}/motion/plan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      waypoints: params.waypoints,
+      interpolation: params.interpolation || "quintic",
+      v_max: params.vMax ?? 2.5,
+      a_max: params.aMax ?? 5.0,
+      sample_dt: params.sampleDt ?? 0.02,
+    }),
+  });
+  if (!res.ok) throw new Error("Trajectory planning failed");
+  return res.json();
+}
+
+export async function executeTrajectory(params: {
+  waypoints: number[][];
+  interpolation?: string;
+  vMax?: number;
+  aMax?: number;
+}): Promise<any> {
+  const res = await fetch(`${BASE_URL}/motion/execute`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      waypoints: params.waypoints,
+      interpolation: params.interpolation || "quintic",
+      v_max: params.vMax ?? 2.5,
+      a_max: params.aMax ?? 5.0,
+    }),
+  });
+  if (!res.ok) throw new Error("Trajectory execution failed");
+  return res.json();
+}
+
+export async function runStepResponseTest(params: {
+  jointIndex: number;
+  stepAmplitudeRad?: number;
+  testDuration?: number;
+  kp?: number;
+  ki?: number;
+  kd?: number;
+}): Promise<any> {
+  const res = await fetch(`${BASE_URL}/motion/step_response`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      joint_index: params.jointIndex,
+      step_amplitude_rad: params.stepAmplitudeRad ?? 0.35,
+      test_duration: params.testDuration ?? 2.0,
+      kp: params.kp ?? 280.0,
+      ki: params.ki ?? 2.0,
+      kd: params.kd ?? 50.0,
+    }),
+  });
+  if (!res.ok) throw new Error("Step response evaluation failed");
+  return res.json();
+}
+
+export async function fetchTrajectoryPresets(): Promise<any> {
+  const res = await fetch(`${BASE_URL}/motion/presets`, { method: "GET" });
+  if (!res.ok) throw new Error("Failed to load trajectory presets");
+  return res.json();
+}

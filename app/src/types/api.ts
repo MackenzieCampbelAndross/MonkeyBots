@@ -181,3 +181,56 @@ export interface PosePreset {
   joints_rad: number[];
   target_pos: [number, number, number];
 }
+
+export interface TrajectorySamplePoint {
+  time: number;
+  positions: number[];
+  velocities: number[];
+  accelerations: number[];
+  cartesian_pos?: [number, number, number];
+  cartesian_quat?: [number, number, number, number];
+}
+
+export interface PlanTrajectoryResponse {
+  total_duration: number;
+  num_segments: number;
+  num_samples: number;
+  interpolation: string;
+  samples: TrajectorySamplePoint[];
+}
+
+export interface ExecuteTrajectoryResponse {
+  duration: number;
+  step_count: number;
+  overall_position_rmse_rad: number;
+  max_tracking_error_rad: number;
+  joint_rmse_rad: number[];
+  joint_max_error_rad: number[];
+  timestamps: number[];
+  target_positions: number[][];
+  actual_positions: number[][];
+  tracking_errors: number[][];
+  applied_torques: number[][];
+}
+
+export interface StepResponseData {
+  joint_index: number;
+  initial_position_rad: number;
+  target_position_rad: number;
+  steady_state_error_rad: number;
+  overshoot_percent: number;
+  rise_time_seconds: number;
+  settling_time_seconds: number;
+  stability: string;
+  is_stable: boolean;
+  timestamps: number[];
+  positions: number[];
+  velocities: number[];
+  torques: number[];
+}
+
+export interface TrajectoryPreset {
+  name: string;
+  description: string;
+  waypoints: number[][];
+}
