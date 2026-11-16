@@ -114,6 +114,21 @@ class SimulationEngine:
             logger.error(f"Failed to compile MuJoCo model: {e}")
             raise RuntimeError(f"MuJoCo compilation error: {e}")
 
+    def configure(self, config: SimulationConfig):
+        """Applies updated runtime simulation configuration to active MuJoCo model."""
+        self.config = config
+        if self.model is not None:
+            self.model.opt.timestep = self.config.timestep
+            self.model.opt.gravity[:] = self.config.gravity
+            if self.config.integrator == "Euler":
+                self.model.opt.integrator = mujoco.mjtIntegrator.mjINT_EULER
+            elif self.config.integrator == "implicit":
+                self.model.opt.integrator = mujoco.mjtIntegrator.mjINT_IMPLICITFAST
+            else:
+                self.model.opt.integrator = mujoco.mjtIntegrator.mjINT_RK4
+            self.model.opt.iterations = self.config.iterations
+            self.model.opt.tolerance = self.config.tolerance
+
     def start(self):
         """Start or resume physics integration."""
         if self.model is not None:
