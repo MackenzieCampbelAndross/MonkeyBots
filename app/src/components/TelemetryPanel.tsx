@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAppStore } from "../store/useAppStore";
 import { Terminal, Activity, Trash2 } from "lucide-react";
 
 export const TelemetryPanel: React.FC = () => {
-  const { telemetry, logs, clearLogs, activeTab, setActiveTab } = useAppStore();
+  const { telemetry, logs, clearLogs } = useAppStore();
+  const [activeTab, setActiveTab] = useState<"inspector" | "logs">("inspector");
 
   return (
     <div className="h-44 bg-slate-900 border-t border-slate-800 flex flex-col select-none">
