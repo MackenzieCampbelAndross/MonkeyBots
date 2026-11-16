@@ -10,6 +10,12 @@ from typing import List, Optional, Dict, Any
 
 from core.monkeybots.simulation.engine import SimulationEngine, SimulationConfig
 from core.monkeybots.simulation.benchmarks import run_all_physics_benchmarks
+from core.monkeybots.simulation.manipulation import (
+    GripperCommand,
+    PickAndPlaceRequest,
+    ManipulationController,
+)
+from core.monkeybots.simulation.manipulation_benchmarks import run_all_manipulation_benchmarks
 from server.monkeybots_server.schemas.commands import SimControlAction
 from server.monkeybots_server.utils.logger import get_logger
 
@@ -164,3 +170,74 @@ async def get_synchronization_metrics():
         "contacts_count": contacts_count,
         "dof": live_engine.model.nv if live_engine.model else 0,
     }
+
+
+@router.post("/gripper/command")
+async def command_gripper(cmd: GripperCommand):
+    """Actuates the parallel-jaw gripper fingers or sets grasping squeeze force."""
+    act = cmd.action.upper()
+    if act == "OPEN":
+        live_engine.set_gripper_force(0.0)
+    elif act == "CLOSE":
+        live_engine.set_gripper_force(cmd.force_n)
+    elif act == "SET_FORCE":
+        live_engine.set_gripper_force(cmd.force_n)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unknown gripper action: {cmd.action}",
+        )
+
+    # Step physics slightly to update contact manifolds
+    live_engine.step(10)
+    state = live_engine.get_gripper_state()
+    logger.info(f"Gripper commanded: {act} (force={cmd.force_n}N, state={state})")
+    return {"message": f"Gripper command {act} executed", "gripper": state}
+
+
+@router.get("/gripper/status")
+async def get_gripper_status():
+    """Returns current gripper aperture, finger normal forces, and grasping status."""
+    return live_engine.get_gripper_state()
+
+
+@router.get("/contacts")
+async def get_active_contacts():
+    """Returns active contact points, normal forces, friction forces, and contact categories."""
+    contacts = live_engine.get_contact_dynamics()
+    return {
+        "count": len(contacts),
+        "contacts": [c.model_dump() for c in contacts],
+    }
+
+
+@router.get("/collision_events")
+async def get_collision_events(limit: int = 50):
+    """Returns recent discrete collision events (impacts, impulses, onsets)."""
+    events = live_engine.get_collision_events(limit=limit)
+    return {
+        "count": len(events),
+        "events": [e.model_dump() for e in events],
+    }
+
+
+@router.post("/manipulation/pick_and_place")
+async def execute_pick_and_place(plan: PickAndPlaceRequest):
+    """Executes an autonomous pick-and-place sequence using contact physics and IK."""
+    engine = live_engine
+    # If the live engine is running robot-only model, run pick-and-place with the workcell model
+    workcell_path = Path("projects/default_6dof_arm/workcell.mjcf")
+    if engine.model is not None and "gripper" not in str(engine.model.names).lower() and workcell_path.exists():
+        engine = SimulationEngine()
+        engine.load_from_xml(workcell_path.read_text(encoding="utf-8"))
+
+    controller = ManipulationController(engine)
+    report = controller.execute_pick_and_place(plan)
+    return report
+
+
+@router.get("/manipulation_benchmarks")
+async def get_manipulation_benchmarks():
+    """Runs all 5 controlled physical verification experiments and returns report."""
+    report = run_all_manipulation_benchmarks()
+    return report

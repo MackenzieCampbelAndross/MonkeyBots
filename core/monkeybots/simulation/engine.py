@@ -8,12 +8,13 @@ import math
 import time
 import numpy as np
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple, Callable, Union
+from typing import List, Dict, Optional, Tuple, Callable, Union, Any
 from pydantic import BaseModel, Field
 
 import mujoco
 from server.monkeybots_server.schemas.telemetry import TelemetryFrame, Pose3D, ContactInfo
 from server.monkeybots_server.utils.logger import get_logger
+from .collision import CollisionTracker, ContactCategory, ContactPointData, CollisionEvent
 
 logger = get_logger("physics_engine")
 
@@ -56,6 +57,13 @@ class SimulationEngine:
         self.ki = 0.5
         self._integral_error: Optional[np.ndarray] = None
 
+        # Gripper control states
+        self._gripper_force: float = 0.0
+        self._gripper_target_pos: Optional[float] = None
+
+        # Real-time collision detection and dynamic event logger
+        self.collision_tracker = CollisionTracker()
+
     def load_from_xml(self, xml_content: Union[str, Path]):
         """Loads and compiles an MJCF XML model string or file path directly into MuJoCo."""
         try:
@@ -86,10 +94,16 @@ class SimulationEngine:
             self._initial_qvel = np.copy(self.data.qvel)
 
             # Initialize actuator targets
-            nv = self.model.nv
-            self._target_qpos = np.copy(self.data.qpos[:nv])
-            self._feedforward_torque = np.zeros(nv)
-            self._integral_error = np.zeros(nv)
+            nu = self.model.nu
+            self._target_qpos = np.zeros(nu)
+            self._feedforward_torque = np.zeros(nu)
+            self._integral_error = np.zeros(nu)
+
+            for i in range(nu):
+                jnt_id = self.model.actuator_trnid[i, 0]
+                if jnt_id >= 0:
+                    q_adr = self.model.jnt_qposadr[jnt_id]
+                    self._target_qpos[i] = float(self.data.qpos[q_adr])
 
             self.step_count = 0
             self.sim_time = 0.0
@@ -130,12 +144,17 @@ class SimulationEngine:
             self.data.qvel[:] = self._initial_qvel
 
         if self._target_qpos is not None and self._initial_qpos is not None:
-            self._target_qpos[:] = self._initial_qpos[: len(self._target_qpos)]
+            for i in range(min(self.model.nu, len(self._target_qpos))):
+                jnt_id = self.model.actuator_trnid[i, 0]
+                if jnt_id >= 0:
+                    q_adr = self.model.jnt_qposadr[jnt_id]
+                    self._target_qpos[i] = float(self._initial_qpos[q_adr])
         if self._integral_error is not None:
             self._integral_error.fill(0.0)
 
         # Forward kinematics to refresh internal structures
         mujoco.mj_forward(self.model, self.data)
+        self.collision_tracker.clear()
 
         self.sim_time = 0.0
         self.step_count = 0
@@ -163,6 +182,9 @@ class SimulationEngine:
             self.step_count += 1
             self.sim_time += dt
 
+            # Update dynamic collision tracking
+            self.collision_tracker.update(self.model, self.data, self.sim_time, dt)
+
             # Numerical Divergence Protection
             is_stable, reason = self.check_numerical_stability()
             if not is_stable:
@@ -187,35 +209,41 @@ class SimulationEngine:
             return
 
         nu = self.model.nu
-        nv = self.model.nv
-        q = self.data.qpos[:nv]
-        v = self.data.qvel[:nv]
-        target_q = self._target_qpos[:nv]
+        for i in range(nu):
+            act_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, i) or ""
+            if "gripper" in act_name.lower():
+                self.data.ctrl[i] = self._gripper_force
+                continue
 
-        # Position error
-        err = target_q - q
-        if self._integral_error is not None:
-            self._integral_error += err * dt
-            # Clamp integral windup
-            self._integral_error = np.clip(self._integral_error, -10.0, 10.0)
+            jnt_id = self.model.actuator_trnid[i, 0]
+            if jnt_id < 0:
+                continue
 
-        # PD torque synthesis
-        u = self.kp * err - self.kd * v
-        if self._integral_error is not None:
-            u += self.ki * self._integral_error
+            q_adr = self.model.jnt_qposadr[jnt_id]
+            v_adr = self.model.jnt_dofadr[jnt_id]
 
-        # Add feedforward if present
-        if self._feedforward_torque is not None:
-            u += self._feedforward_torque[:nu]
+            target_q = self._target_qpos[i] if i < len(self._target_qpos) else self.data.qpos[q_adr]
+            current_q = self.data.qpos[q_adr]
+            current_v = self.data.qvel[v_adr]
 
-        # Apply to control inputs
-        for i in range(min(nu, len(u))):
+            err = target_q - current_q
+            if self._integral_error is not None and i < len(self._integral_error):
+                self._integral_error[i] += err * dt
+                self._integral_error[i] = np.clip(self._integral_error[i], -10.0, 10.0)
+                int_term = self.ki * self._integral_error[i]
+            else:
+                int_term = 0.0
+
+            u = self.kp * err - self.kd * current_v + int_term
+            if self._feedforward_torque is not None and i < len(self._feedforward_torque):
+                u += self._feedforward_torque[i]
+
             # Check actuator force limits
             ctrl_limit = self.model.actuator_ctrlrange[i]
             if ctrl_limit[0] < ctrl_limit[1]:
-                self.data.ctrl[i] = np.clip(u[i], ctrl_limit[0], ctrl_limit[1])
+                self.data.ctrl[i] = np.clip(u, ctrl_limit[0], ctrl_limit[1])
             else:
-                self.data.ctrl[i] = u[i]
+                self.data.ctrl[i] = u
 
     def set_target_joint_positions(self, targets: List[float]):
         """Sets desired target joint positions for the internal actuators."""
@@ -251,37 +279,74 @@ class SimulationEngine:
         return True, "Stable"
 
     def get_contact_dynamics(self) -> List[ContactInfo]:
-        """Extracts active contact points, normal contact forces, and geom names."""
+        """Extracts active contact points, normal contact forces, normals, friction, and slip state."""
         if self.model is None or self.data is None:
             return []
 
+        dt = self.model.opt.timestep
+        contact_points = self.collision_tracker.update(self.model, self.data, self.sim_time, dt)
+
         contacts: List[ContactInfo] = []
-        ncon = self.data.ncon
-
-        for i in range(ncon):
-            con = self.data.contact[i]
-            geom1_id = con.geom1
-            geom2_id = con.geom2
-
-            geom1_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, geom1_id) or f"geom_{geom1_id}"
-            geom2_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, geom2_id) or f"geom_{geom2_id}"
-
-            # Calculate 6D contact force [normal, friction1, friction2, torque...]
-            c_force = np.zeros(6, dtype=np.float64)
-            mujoco.mj_contactForce(self.model, self.data, i, c_force)
-            normal_force = float(abs(c_force[0]))
-
+        for cp in contact_points:
             contacts.append(
                 ContactInfo(
-                    geom1=geom1_name,
-                    geom2=geom2_name,
-                    force=round(normal_force, 2),
-                    distance=round(float(con.dist), 4),
-                    position=[round(float(p), 4) for p in con.pos],
+                    geom1=cp.geom1,
+                    geom2=cp.geom2,
+                    force=cp.normal_force,
+                    distance=cp.distance,
+                    position=cp.position,
+                    normal=cp.normal,
+                    friction_force=cp.friction_force,
+                    category=cp.category.value,
+                    slip_state=cp.slip_state,
                 )
             )
-
         return contacts
+
+    def set_gripper_force(self, force_n: float):
+        """Sets grasping squeeze force on gripper actuators (N)."""
+        self._gripper_force = float(force_n)
+        if self.model is not None and self.data is not None:
+            for i in range(self.model.nu):
+                act_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, i) or ""
+                if "gripper" in act_name.lower():
+                    self.data.ctrl[i] = self._gripper_force
+
+    def get_gripper_state(self) -> Dict[str, Any]:
+        """Returns gripper aperture width (m), finger normal forces, and grasping status."""
+        if self.model is None or self.data is None:
+            return {"width": 0.08, "left_force": 0.0, "right_force": 0.0, "is_grasping": False}
+
+        left_force = 0.0
+        right_force = 0.0
+        contacts = self.collision_tracker.update(self.model, self.data, self.sim_time, self.model.opt.timestep)
+        for c in contacts:
+            pair = (c.geom1 + " " + c.geom2 + " " + c.body1 + " " + c.body2).lower()
+            if "left" in pair and ("box" in pair or "object" in pair or "part" in pair):
+                left_force += c.normal_force
+            if "right" in pair and ("box" in pair or "object" in pair or "part" in pair):
+                right_force += c.normal_force
+
+        aperture = 0.08
+        try:
+            l_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, "left_finger")
+            r_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, "right_finger")
+            if l_id != -1 and r_id != -1:
+                aperture = float(np.linalg.norm(self.data.xpos[l_id] - self.data.xpos[r_id]))
+        except Exception:
+            pass
+
+        is_grasping = (left_force > 0.5 and right_force > 0.5)
+        return {
+            "width": round(aperture, 4),
+            "left_force": round(left_force, 2),
+            "right_force": round(right_force, 2),
+            "is_grasping": is_grasping,
+        }
+
+    def get_collision_events(self, limit: int = 50) -> List[CollisionEvent]:
+        """Returns recent dynamic collision events from the tracker."""
+        return self.collision_tracker.get_events(limit=limit)
 
     def get_telemetry_frame(self) -> TelemetryFrame:
         """Assembles a high-frequency telemetry frame conforming to the IPC contract."""

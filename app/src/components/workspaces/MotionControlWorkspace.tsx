@@ -11,6 +11,11 @@ import {
   executeTrajectory,
   runStepResponseTest,
   fetchTrajectoryPresets,
+  sendGripperCommand,
+  fetchGripperStatus,
+  fetchCollisionEvents,
+  executePickAndPlace,
+  runManipulationBenchmarks,
 } from "../../services/api";
 import type {
   KinematicChainInfo,
@@ -37,14 +42,18 @@ import {
   BarChart3,
   Plus,
   Trash2,
+  Box,
+  ShieldAlert,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 
 export const MotionControlWorkspace: React.FC = () => {
-  const { addToast } = useAppStore();
+  const { addToast, telemetry } = useAppStore();
 
   // Navigation / Mode Switcher
-  const [activeTab, setActiveTab] = useState<"IK" | "FK" | "TRAJECTORY" | "PID">("TRAJECTORY");
-  const [inspectorTab, setInspectorTab] = useState<"METRICS" | "TRANSFORM" | "JACOBIAN" | "TELEMETRY">("TELEMETRY");
+  const [activeTab, setActiveTab] = useState<"IK" | "FK" | "TRAJECTORY" | "PID" | "MANIPULATION">("TRAJECTORY");
+  const [inspectorTab, setInspectorTab] = useState<"METRICS" | "TRANSFORM" | "JACOBIAN" | "TELEMETRY" | "CONTACTS">("TELEMETRY");
 
   // Robot State
   const [chainInfo, setChainInfo] = useState<KinematicChainInfo | null>(null);
@@ -88,6 +97,104 @@ export const MotionControlWorkspace: React.FC = () => {
   const [posePresets, setPosePresets] = useState<PosePreset[]>([]);
   const [trajPresets, setTrajPresets] = useState<TrajectoryPreset[]>([]);
   const [isSolving, setIsSolving] = useState<boolean>(false);
+
+  // Stage 09: Manipulation & Contact Physics State
+  const [gripperForce, setGripperForce] = useState<number>(16.0);
+  const [gripperStatus, setGripperStatus] = useState<{
+    width: number;
+    left_force: number;
+    right_force: number;
+    is_grasping: boolean;
+  }>({ width: 0.08, left_force: 0, right_force: 0, is_grasping: false });
+  const [pickPos, setPickPos] = useState<[number, number, number]>([0.45, 0.0, 0.225]);
+  const [placePos, setPlacePos] = useState<[number, number, number]>([0.35, -0.20, 0.225]);
+  const [liftHeight, setLiftHeight] = useState<number>(0.15);
+  const [isExecutingPnP, setIsExecutingPnP] = useState<boolean>(false);
+  const [pnpResult, setPnpResult] = useState<any | null>(null);
+  const [manipBenchmarks, setManipBenchmarks] = useState<any | null>(null);
+  const [isRunningBenchmarks, setIsRunningBenchmarks] = useState<boolean>(false);
+  const [collisionEvents, setCollisionEvents] = useState<any[]>([]);
+
+  // Refresh gripper & collision events periodically when on relevant tab
+  useEffect(() => {
+    if (activeTab === "MANIPULATION" || inspectorTab === "CONTACTS") {
+      fetchGripperStatus()
+        .then((st) => setGripperStatus(st))
+        .catch(() => {});
+      fetchCollisionEvents(25)
+        .then((res) => setCollisionEvents(res.events || []))
+        .catch(() => {});
+    }
+  }, [activeTab, inspectorTab, telemetry]);
+
+  const handleGripperOpen = async () => {
+    try {
+      await sendGripperCommand("OPEN", 0.0);
+      const st = await fetchGripperStatus();
+      setGripperStatus(st);
+      addToast("info", "Gripper Opened", "Jaws opened to full aperture.");
+    } catch (err: any) {
+      addToast("error", "Gripper Error", err.message || "Failed to open gripper");
+    }
+  };
+
+  const handleGripperClose = async () => {
+    try {
+      await sendGripperCommand("CLOSE", gripperForce);
+      const st = await fetchGripperStatus();
+      setGripperStatus(st);
+      addToast(
+        st.is_grasping ? "success" : "info",
+        st.is_grasping ? "Object Grasped" : "Gripper Closed",
+        `Applied ${gripperForce} N squeeze. Left: ${st.left_force} N, Right: ${st.right_force} N`
+      );
+    } catch (err: any) {
+      addToast("error", "Gripper Error", err.message || "Failed to close gripper");
+    }
+  };
+
+  const handleExecutePickAndPlace = async () => {
+    setIsExecutingPnP(true);
+    addToast("info", "Pick & Place Started", "Initiating physics-governed pick and place sequence...");
+    try {
+      const res = await executePickAndPlace({
+        pick_pos: pickPos,
+        place_pos: placePos,
+        lift_height: liftHeight,
+        grip_force: gripperForce,
+      });
+      setPnpResult(res);
+      const st = await fetchGripperStatus();
+      setGripperStatus(st);
+      if (res.success) {
+        addToast("success", "Pick & Place Succeeded", `Object lifted +${res.phases.find((p: any) => p.phase === "FRICTION_LIFT")?.lift_delta_z_m || 0.12} m purely via friction.`);
+      } else {
+        addToast("warning", "Pick & Place Warning", "Grasp or lift verification condition was not fully met.");
+      }
+    } catch (err: any) {
+      addToast("error", "Execution Failed", err.message || "Pick and place cycle failed.");
+    } finally {
+      setIsExecutingPnP(false);
+    }
+  };
+
+  const handleRunBenchmarks = async () => {
+    setIsRunningBenchmarks(true);
+    addToast("info", "Running Benchmarks", "Executing 5 controlled physical verification experiments...");
+    try {
+      const res = await runManipulationBenchmarks();
+      setManipBenchmarks(res);
+      if (res.all_passed) {
+        addToast("success", "All 5 Benchmarks Passed", "Verified contact onset, obstacle impact, bilateral grasp, friction lift & free-fall.");
+      } else {
+        addToast("error", "Benchmark Failures", `${res.failed_count} of 5 benchmarks failed.`);
+      }
+    } catch (err: any) {
+      addToast("error", "Benchmark Run Error", err.message || "Failed to run benchmarks.");
+    } finally {
+      setIsRunningBenchmarks(false);
+    }
+  };
 
   // Load initial robot chain and presets
   useEffect(() => {
@@ -237,13 +344,14 @@ export const MotionControlWorkspace: React.FC = () => {
           </span>
         </div>
 
-        {/* 4-Tab Mode Navigation */}
-        <div className="grid grid-cols-4 p-1.5 bg-slate-950/70 border-b border-slate-800 gap-1 text-[11px]">
+        {/* 5-Tab Mode Navigation */}
+        <div className="grid grid-cols-5 p-1.5 bg-slate-950/70 border-b border-slate-800 gap-1 text-[11px]">
           {[
             { id: "TRAJECTORY", label: "Trajectory", icon: TrendingUp },
-            { id: "PID", label: "PID Control", icon: Gauge },
+            { id: "PID", label: "PID Tuning", icon: Gauge },
             { id: "IK", label: "Cartesian IK", icon: Target },
             { id: "FK", label: "Joint FK", icon: Sliders },
+            { id: "MANIPULATION", label: "Manipulation", icon: Box },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -791,6 +899,235 @@ export const MotionControlWorkspace: React.FC = () => {
             </div>
           )}
 
+          {/* ===================== TAB 5: OBJECT MANIPULATION & GRASPING ===================== */}
+          {activeTab === "MANIPULATION" && (
+            <div className="space-y-4">
+              {/* Gripper Actuation Card */}
+              <div className="bg-slate-950/70 p-3 rounded border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-200">
+                  <span className="flex items-center space-x-1.5">
+                    <Box className="w-4 h-4 text-amber-400" />
+                    <span>Parallel-Jaw Gripper Control</span>
+                  </span>
+                  <span
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-bold font-mono ${
+                      gripperStatus.is_grasping
+                        ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                        : "bg-slate-800 text-slate-400"
+                    }`}
+                  >
+                    {gripperStatus.is_grasping ? "GRASP SECURED" : "OPEN / IDLE"}
+                  </span>
+                </div>
+
+                {/* Squeeze Force Slider */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                    <span>Squeeze Force Command</span>
+                    <span className="text-amber-400 font-bold">{gripperForce.toFixed(1)} N</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="5"
+                    max="35"
+                    step="1"
+                    value={gripperForce}
+                    onChange={(e) => setGripperForce(parseFloat(e.target.value))}
+                    className="w-full accent-amber-500 cursor-pointer h-1.5 bg-slate-800 rounded"
+                  />
+                  <div className="flex justify-between text-[9px] text-slate-600 font-mono">
+                    <span>5 N (Gentle)</span>
+                    <span>35 N (Heavy Grip)</span>
+                  </div>
+                </div>
+
+                {/* Gripper Buttons */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={handleGripperClose}
+                    className="py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded flex items-center justify-center space-x-1 transition shadow"
+                  >
+                    <Box className="w-3.5 h-3.5" />
+                    <span>Grip / Squeeze</span>
+                  </button>
+                  <button
+                    onClick={handleGripperOpen}
+                    className="py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded flex items-center justify-center space-x-1 border border-slate-700 transition"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Release / Open</span>
+                  </button>
+                </div>
+
+                {/* Live Finger Force Telemetry */}
+                <div className="grid grid-cols-3 gap-1.5 text-center font-mono text-[10px]">
+                  <div className="bg-slate-900 p-1.5 rounded border border-slate-800">
+                    <div className="text-slate-500 text-[9px]">Aperture</div>
+                    <div className="text-slate-200 font-bold mt-0.5">{(gripperStatus.width * 1000).toFixed(1)} mm</div>
+                  </div>
+                  <div className="bg-slate-900 p-1.5 rounded border border-slate-800">
+                    <div className="text-slate-500 text-[9px]">Left Jaw Fn</div>
+                    <div className="text-emerald-400 font-bold mt-0.5">{gripperStatus.left_force.toFixed(1)} N</div>
+                  </div>
+                  <div className="bg-slate-900 p-1.5 rounded border border-slate-800">
+                    <div className="text-slate-500 text-[9px]">Right Jaw Fn</div>
+                    <div className="text-emerald-400 font-bold mt-0.5">{gripperStatus.right_force.toFixed(1)} N</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Autonomous Pick & Place Card */}
+              <div className="bg-slate-950/70 p-3 rounded border border-slate-800 space-y-2.5">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-200">
+                  <span className="flex items-center space-x-1.5">
+                    <TrendingUp className="w-4 h-4 text-sky-400" />
+                    <span>Autonomous Pick & Place Sequencer</span>
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">MuJoCo Physics</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-1">Pick Target [m]</label>
+                    <div className="grid grid-cols-3 gap-1 font-mono">
+                      {[0, 1, 2].map((i) => (
+                        <input
+                          key={i}
+                          type="number"
+                          step="0.02"
+                          value={pickPos[i]}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            const next = [...pickPos] as [number, number, number];
+                            next[i] = val;
+                            setPickPos(next);
+                          }}
+                          className="bg-slate-900 border border-slate-800 rounded px-1 py-0.5 text-center text-slate-200"
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-1">Place Target [m]</label>
+                    <div className="grid grid-cols-3 gap-1 font-mono">
+                      {[0, 1, 2].map((i) => (
+                        <input
+                          key={i}
+                          type="number"
+                          step="0.02"
+                          value={placePos[i]}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            const next = [...placePos] as [number, number, number];
+                            next[i] = val;
+                            setPlacePos(next);
+                          }}
+                          className="bg-slate-900 border border-slate-800 rounded px-1 py-0.5 text-center text-slate-200"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lift Height Setting */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                    <span>Vertical Lift Clearance</span>
+                    <span className="text-sky-400 font-bold">{(liftHeight * 100).toFixed(0)} cm</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.08"
+                    max="0.25"
+                    step="0.01"
+                    value={liftHeight}
+                    onChange={(e) => setLiftHeight(parseFloat(e.target.value))}
+                    className="w-full accent-sky-500 cursor-pointer h-1.5 bg-slate-800 rounded"
+                  />
+                </div>
+
+                <button
+                  onClick={handleExecutePickAndPlace}
+                  disabled={isExecutingPnP}
+                  className="w-full py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded flex items-center justify-center space-x-1.5 transition shadow"
+                >
+                  {isExecutingPnP ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5" />
+                  )}
+                  <span>Execute Physics Pick & Place Cycle</span>
+                </button>
+
+                {pnpResult && (
+                  <div className="p-2 bg-slate-900 rounded border border-slate-800 text-[10px] space-y-1 font-mono">
+                    <div className="flex justify-between items-center text-slate-300">
+                      <span>Status: {pnpResult.success ? "COMPLETED" : "FAILED"}</span>
+                      <span className="text-emerald-400 font-bold">{pnpResult.execution_time_s}s</span>
+                    </div>
+                    <div className="text-slate-400 flex justify-between">
+                      <span>Friction Hold:</span>
+                      <span className={pnpResult.friction_hold_verified ? "text-emerald-400 font-bold" : "text-amber-400"}>
+                        {pnpResult.friction_hold_verified ? "VERIFIED (NON-SLIP)" : "SLIPPED"}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 5 Physical Verification Experiments Card */}
+              <div className="bg-slate-950/70 p-3 rounded border border-slate-800 space-y-2.5">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-200">
+                  <span className="flex items-center space-x-1.5">
+                    <Zap className="w-4 h-4 text-emerald-400" />
+                    <span>5 Controlled Verification Experiments</span>
+                  </span>
+                  <button
+                    onClick={handleRunBenchmarks}
+                    disabled={isRunningBenchmarks}
+                    className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[10px] font-bold flex items-center space-x-1"
+                  >
+                    {isRunningBenchmarks ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
+                    <span>Run Suite</span>
+                  </button>
+                </div>
+
+                <div className="space-y-1.5 text-[10px]">
+                  {[
+                    { id: 1, name: "1. Robot Touching Object (Onset, Fn > 0)" },
+                    { id: 2, name: "2. Obstacle Collision & Stability (Impulse J)" },
+                    { id: 3, name: "3. Bilateral Contact Grasping (Fn_left, Fn_right)" },
+                    { id: 4, name: "4. Friction-Based Lifting (>= 10cm, No Parenting)" },
+                    { id: 5, name: "5. Controlled Release & Gravity Free-Fall" },
+                  ].map((item, idx) => {
+                    const bench = manipBenchmarks?.results?.[idx];
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-1.5 bg-slate-900 rounded border border-slate-800 flex items-center justify-between font-mono"
+                      >
+                        <span className="text-slate-300 truncate">{item.name}</span>
+                        {bench ? (
+                          <span
+                            className={`px-1.5 py-0.2 rounded font-bold text-[9px] flex items-center space-x-0.5 ${
+                              bench.passed ? "text-emerald-400 bg-emerald-950" : "text-rose-400 bg-rose-950"
+                            }`}
+                          >
+                            {bench.passed ? <CheckCircle2 className="w-2.5 h-2.5" /> : <XCircle className="w-2.5 h-2.5" />}
+                            <span>{bench.passed ? "PASS" : "FAIL"}</span>
+                          </span>
+                        ) : (
+                          <span className="text-slate-600 text-[9px]">PENDING</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Simulation Dispatch Action */}
           <button
             onClick={handleSendToSimulation}
@@ -836,8 +1173,9 @@ export const MotionControlWorkspace: React.FC = () => {
         <div className="flex border-b border-slate-800 bg-slate-950/70 p-1 gap-1 text-[11px]">
           {[
             { id: "TELEMETRY", label: "Telemetry", icon: Activity },
+            { id: "CONTACTS", label: "Contacts", icon: ShieldAlert },
             { id: "METRICS", label: "SVD Metrics", icon: Gauge },
-            { id: "TRANSFORM", label: "SE(3) Matrix", icon: Move3d },
+            { id: "TRANSFORM", label: "SE(3)", icon: Move3d },
             { id: "JACOBIAN", label: "Jacobian", icon: Compass },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -1018,6 +1356,120 @@ export const MotionControlWorkspace: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: ACTIVE CONTACT MANIFOLDS & COLLISION EVENT LOG */}
+          {inspectorTab === "CONTACTS" && (
+            <div className="space-y-4">
+              {/* Active Contacts Section */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-[10px] text-slate-400 font-sans font-semibold uppercase">
+                  <span className="flex items-center space-x-1">
+                    <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Active Contact Manifolds</span>
+                  </span>
+                  <span className="text-emerald-400 font-mono">
+                    {telemetry?.contacts?.length || 0} active
+                  </span>
+                </div>
+
+                {(!telemetry?.contacts || telemetry.contacts.length === 0) ? (
+                  <div className="p-3 bg-slate-950 rounded border border-slate-800/80 text-center text-slate-500 text-[10px] font-sans">
+                    No active contact manifolds currently engaged.
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-56 overflow-y-auto">
+                    {telemetry.contacts.map((c, idx) => (
+                      <div
+                        key={idx}
+                        className="p-2 bg-slate-950 rounded border border-slate-800 text-[10px] space-y-1"
+                      >
+                        <div className="flex justify-between items-center font-bold">
+                          <span className="text-slate-200 truncate max-w-[190px]">
+                            {c.geom1} &harr; {c.geom2}
+                          </span>
+                          <span
+                            className={`px-1 py-0.2 rounded text-[9px] font-mono ${
+                              c.category === "robot_object"
+                                ? "bg-amber-950 text-amber-400 border border-amber-800"
+                                : c.category === "robot_env"
+                                ? "bg-rose-950 text-rose-400 border border-rose-800"
+                                : c.category === "object_env"
+                                ? "bg-sky-950 text-sky-400 border border-sky-800"
+                                : "bg-slate-800 text-slate-400"
+                            }`}
+                          >
+                            {c.category || "contact"}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-1 font-mono text-[9px] text-slate-400 pt-0.5">
+                          <div>
+                            Fn: <span className="text-emerald-400 font-bold">{c.force.toFixed(2)} N</span>
+                          </div>
+                          <div>
+                            Ft: <span className="text-sky-400 font-bold">{(c.friction_force || 0).toFixed(2)} N</span>
+                          </div>
+                          <div>
+                            Slip:{" "}
+                            <span
+                              className={
+                                c.slip_state === "slipping"
+                                  ? "text-rose-400 font-bold"
+                                  : "text-emerald-400 font-bold"
+                              }
+                            >
+                              {c.slip_state || "sticking"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {c.position && (
+                          <div className="text-[9px] text-slate-500 font-mono">
+                            Pos: [{c.position[0].toFixed(3)}, {c.position[1].toFixed(3)}, {c.position[2].toFixed(3)}]
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Collision Events Log Section */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-[10px] text-slate-400 font-sans font-semibold uppercase">
+                  <span>Dynamic Collision Event Log</span>
+                  <span className="text-slate-500 font-mono">{collisionEvents.length} events</span>
+                </div>
+
+                {collisionEvents.length === 0 ? (
+                  <div className="p-3 bg-slate-950 rounded border border-slate-800/80 text-center text-slate-500 text-[10px] font-sans">
+                    No collision onset or impact events recorded yet.
+                  </div>
+                ) : (
+                  <div className="space-y-1 max-h-52 overflow-y-auto font-mono text-[9px]">
+                    {collisionEvents.slice(-10).reverse().map((ev, idx) => (
+                      <div
+                        key={idx}
+                        className="p-1.5 bg-slate-950 rounded border border-slate-800 flex items-center justify-between"
+                      >
+                        <div>
+                          <div className="text-slate-200 font-bold truncate max-w-[200px]">
+                            {ev.geom1} &harr; {ev.geom2}
+                          </div>
+                          <div className="text-slate-500 text-[8px]">
+                            t={ev.timestamp.toFixed(3)}s &bull; {ev.event_type} &bull; J={ev.impulse.toFixed(4)} Ns
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-amber-400 font-bold">{ev.normal_force.toFixed(1)} N</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

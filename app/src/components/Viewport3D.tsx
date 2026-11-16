@@ -30,6 +30,7 @@ export const Viewport3D: React.FC = () => {
 
   const visualizerRef = useRef<RobotVisualizer>(new RobotVisualizer());
   const envManagerRef = useRef<EnvironmentManager>(new EnvironmentManager());
+  const contactsGroupRef = useRef<THREE.Group>(new THREE.Group());
   const gridRef = useRef<THREE.GridHelper | null>(null);
   const dirLightRef = useRef<THREE.DirectionalLight | null>(null);
 
@@ -141,6 +142,7 @@ export const Viewport3D: React.FC = () => {
     // F. Add Robot Model & Environment Hierarchies to Scene
     scene.add(visualizerRef.current.rootGroup);
     scene.add(envManagerRef.current.rootGroup);
+    scene.add(contactsGroupRef.current);
 
     // Load initial 6-DOF Robot Model
     fetchSample6DofModel()
@@ -317,6 +319,32 @@ export const Viewport3D: React.FC = () => {
     if (!telemetry) return;
     const t0 = performance.now();
     visualizerRef.current.updateJointPositions(telemetry.joint_names, telemetry.qpos);
+
+    // Update dynamic 3D contact point markers and force arrows
+    const group = contactsGroupRef.current;
+    while (group.children.length > 0) {
+      group.remove(group.children[0]);
+    }
+    if (telemetry.contacts && telemetry.contacts.length > 0) {
+      for (const c of telemetry.contacts) {
+        if (c.position && c.force > 0.05) {
+          const sphere = new THREE.Mesh(
+            new THREE.SphereGeometry(0.012, 12, 12),
+            new THREE.MeshBasicMaterial({ color: 0xef4444 })
+          );
+          sphere.position.set(c.position[0], c.position[1], c.position[2]);
+          group.add(sphere);
+
+          if (c.normal) {
+            const dir = new THREE.Vector3(c.normal[0], c.normal[1], c.normal[2]).normalize();
+            const len = Math.min(0.18, Math.max(0.03, c.force * 0.005));
+            const arrow = new THREE.ArrowHelper(dir, sphere.position, len, 0xf59e0b, 0.025, 0.012);
+            group.add(arrow);
+          }
+        }
+      }
+    }
+
     const delta = performance.now() - t0;
     setSyncLatencyMs(Math.max(0.5, Math.round(delta * 10) / 10));
   }, [telemetry]);

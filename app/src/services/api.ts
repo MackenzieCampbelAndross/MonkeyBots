@@ -239,3 +239,87 @@ export async function fetchTrajectoryPresets(): Promise<any> {
   if (!res.ok) throw new Error("Failed to load trajectory presets");
   return res.json();
 }
+
+// Stage 09: Collision Detection, Contact Physics & Object Manipulation APIs
+export async function sendGripperCommand(action: "OPEN" | "CLOSE" | "SET_FORCE", forceN: number = 16.0): Promise<any> {
+  const res = await fetch(`${BASE_URL}/simulation/gripper/command`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, force_n: forceN }),
+  });
+  if (!res.ok) throw new Error("Gripper command failed");
+  return res.json();
+}
+
+export async function fetchGripperStatus(): Promise<{
+  width: number;
+  left_force: number;
+  right_force: number;
+  is_grasping: boolean;
+}> {
+  const res = await fetch(`${BASE_URL}/simulation/gripper/status`, { method: "GET" });
+  if (!res.ok) throw new Error("Failed to load gripper status");
+  return res.json();
+}
+
+export async function fetchActiveContacts(): Promise<{
+  count: number;
+  contacts: Array<{
+    geom1: string;
+    geom2: string;
+    force: number;
+    distance: number;
+    position?: [number, number, number];
+    normal?: [number, number, number];
+    friction_force?: number;
+    category?: string;
+    slip_state?: string;
+  }>;
+}> {
+  const res = await fetch(`${BASE_URL}/simulation/contacts`, { method: "GET" });
+  if (!res.ok) throw new Error("Failed to fetch active contacts");
+  return res.json();
+}
+
+export async function fetchCollisionEvents(limit: number = 50): Promise<{
+  count: number;
+  events: Array<{
+    timestamp: number;
+    event_type: string;
+    geom1: string;
+    geom2: string;
+    body1: string;
+    body2: string;
+    category: string;
+    normal_force: number;
+    friction_force: number;
+    impulse: number;
+    position: [number, number, number];
+    normal: [number, number, number];
+  }>;
+}> {
+  const res = await fetch(`${BASE_URL}/simulation/collision_events?limit=${limit}`, { method: "GET" });
+  if (!res.ok) throw new Error("Failed to fetch collision events");
+  return res.json();
+}
+
+export async function executePickAndPlace(plan?: {
+  pick_pos?: [number, number, number];
+  place_pos?: [number, number, number];
+  lift_height?: number;
+  grip_force?: number;
+}): Promise<any> {
+  const res = await fetch(`${BASE_URL}/simulation/manipulation/pick_and_place`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(plan || {}),
+  });
+  if (!res.ok) throw new Error("Pick and place execution failed");
+  return res.json();
+}
+
+export async function runManipulationBenchmarks(): Promise<any> {
+  const res = await fetch(`${BASE_URL}/simulation/manipulation_benchmarks`, { method: "GET" });
+  if (!res.ok) throw new Error("Failed to run manipulation benchmarks");
+  return res.json();
+}

@@ -20,6 +20,10 @@ class ContactInfo(BaseModel):
     force: float = Field(..., description="Normal contact force magnitude in Newtons")
     distance: float = Field(default=0.0, description="Penetration depth or distance")
     position: Optional[List[float]] = Field(default=None, description="Contact point [x, y, z]")
+    normal: Optional[List[float]] = Field(default=None, description="Unit contact normal vector")
+    friction_force: Optional[float] = Field(default=0.0, description="Tangential friction force magnitude in Newtons")
+    category: Optional[str] = Field(default="unknown", description="Contact category (robot_self, robot_env, robot_object, etc.)")
+    slip_state: Optional[str] = Field(default="sticking", description="'sticking', 'slipping', or 'no_contact'")
 
 
 class TelemetryFrame(BaseModel):

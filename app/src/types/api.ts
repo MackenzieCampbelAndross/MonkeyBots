@@ -88,6 +88,10 @@ export interface ContactInfo {
   force: number;
   distance: number;
   position?: [number, number, number];
+  normal?: [number, number, number];
+  friction_force?: number;
+  category?: string;
+  slip_state?: string;
 }
 
 export interface TelemetryFrame {
