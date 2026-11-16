@@ -450,3 +450,106 @@ export interface ExperimentComparisonData {
     rmse_improvement_percent: number;
   }>;
 }
+
+// Stage 12: Analytics, Visualization & Engineering Reporting Types
+export interface JointPerformanceMetricsData {
+  joint_index: number;
+  name: string;
+  position_rmse_rad: number;
+  max_position_error_rad: number;
+  max_velocity_rad_s: number;
+  max_acceleration_rad_s2: number;
+  peak_torque_nm: number;
+  rms_torque_nm: number;
+}
+
+export interface StepResponseMetricsData {
+  rise_time_s: number;
+  settling_time_s: number;
+  overshoot_percent: number;
+  steady_state_error_rad: number;
+  is_stable: boolean;
+}
+
+export interface SimulationRunMetricsData {
+  total_duration_s: number;
+  total_steps: number;
+  timestep_s: number;
+  overall_position_rmse_m: number;
+  max_cartesian_error_m: number;
+  overall_joint_rmse_rad: number;
+  max_orientation_error_rad: number;
+  max_orientation_error_deg: number;
+  joints: JointPerformanceMetricsData[];
+  step_response: StepResponseMetricsData;
+  peak_applied_torque_nm: number;
+  total_energy_initial_j: number;
+  total_energy_final_j: number;
+  energy_drift_j: number;
+  collision_events_count: number;
+  peak_contact_force_n: number;
+  real_time_factor: number;
+  mean_step_latency_us: number;
+  max_step_latency_us: number;
+  avg_solver_iterations: number;
+}
+
+export interface TelemetryTimeSeriesData {
+  timestamps: number[];
+  q_actual: number[][];
+  q_target: number[][];
+  qvel_actual: number[][];
+  qacc_actual: number[][];
+  torques: number[][];
+  ee_pos_actual: number[][];
+  ee_pos_target: number[][];
+  pos_error_norm: number[];
+  rot_error_rad: number[];
+  energy_total: number[];
+  contacts_count: number[];
+  max_normal_force: number[];
+  solver_niter: number[];
+}
+
+export interface AnalyticsRunResponse {
+  status: string;
+  metrics: SimulationRunMetricsData;
+  telemetry: TelemetryTimeSeriesData;
+  total_points: number;
+}
+
+export interface RunComparisonItemData {
+  run_id: string;
+  run_name: string;
+  timestep: number;
+  duration: number;
+  cartesian_rmse_mm: number;
+  max_cartesian_error_mm: number;
+  joint_rmse_mrad: number;
+  peak_torque_nm: number;
+  rms_torque_nm: number;
+  settling_time_s: number;
+  overshoot_percent: number;
+  energy_drift_j: number;
+  real_time_factor: number;
+  mean_latency_us: number;
+}
+
+export interface CrossRunMetricDeltaData {
+  target_id: string;
+  baseline_id: string;
+  delta_rmse_mm: number;
+  rmse_improvement_pct: number;
+  delta_peak_torque_nm: number;
+  delta_settling_time_s: number;
+  delta_energy_drift_j: number;
+  rtf_ratio: number;
+  trade_off_summary: string;
+}
+
+export interface MultiRunComparisonReportData {
+  baseline_run_id: string;
+  compared_runs: RunComparisonItemData[];
+  deltas: Record<string, CrossRunMetricDeltaData>;
+  key_findings: string[];
+}

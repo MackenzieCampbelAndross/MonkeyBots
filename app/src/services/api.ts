@@ -16,6 +16,8 @@ import type {
   ProjectIntegrityReport,
   CreateProjectPayload,
   BackupItem,
+  AnalyticsRunResponse,
+  MultiRunComparisonReportData,
 } from "../types/api";
 
 const BASE_URL = "http://127.0.0.1:8765/api/v1";
@@ -545,4 +547,72 @@ export async function compareValidationExperiments(experimentIds: string[]): Pro
     throw new Error(err.detail || `Comparison failed: ${res.status}`);
   }
   return res.json();
+}
+
+// Stage 12: Analytics, Visualization & Engineering Reporting APIs
+export async function recordSimulationRun(config: {
+  project_id?: string;
+  duration?: number;
+  timestep?: number;
+  interpolation?: string;
+  kp_gains?: number[];
+  kd_gains?: number[];
+  ki_gains?: number[];
+  waypoints?: number[][];
+  v_max?: number;
+  a_max?: number;
+}): Promise<AnalyticsRunResponse> {
+  const res = await fetch(`${BASE_URL}/analytics/record`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Run failed" }));
+    throw new Error(err.detail || `Failed to record simulation run: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchLatestAnalytics(): Promise<AnalyticsRunResponse> {
+  const res = await fetch(`${BASE_URL}/analytics/latest`, { method: "GET" });
+  if (!res.ok) throw new Error(`Failed to fetch latest analytics: ${res.status}`);
+  return res.json();
+}
+
+export async function compareAnalyticsRuns(experimentIds: string[]): Promise<MultiRunComparisonReportData> {
+  const res = await fetch(`${BASE_URL}/analytics/compare`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ experiment_ids: experimentIds }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Comparison failed" }));
+    throw new Error(err.detail || `Failed to compare runs: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchAnalyticsCSV(): Promise<string> {
+  const res = await fetch(`${BASE_URL}/analytics/export/csv`, { method: "GET" });
+  if (!res.ok) throw new Error(`CSV export failed: ${res.status}`);
+  return res.text();
+}
+
+export async function fetchAnalyticsJSON(): Promise<any> {
+  const res = await fetch(`${BASE_URL}/analytics/export/json`, { method: "GET" });
+  if (!res.ok) throw new Error(`JSON export failed: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchAnalyticsMarkdown(): Promise<string> {
+  const res = await fetch(`${BASE_URL}/analytics/export/markdown`, { method: "GET" });
+  if (!res.ok) throw new Error(`Markdown export failed: ${res.status}`);
+  return res.text();
+}
+
+export async function fetchAnalyticsHTML(): Promise<string> {
+  const res = await fetch(`${BASE_URL}/analytics/export/html`, { method: "GET" });
+  if (!res.ok) throw new Error(`HTML report export failed: ${res.status}`);
+  return res.text();
 }
