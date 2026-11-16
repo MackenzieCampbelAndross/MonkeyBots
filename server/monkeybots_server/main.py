@@ -13,6 +13,7 @@ from server.monkeybots_server.router_system import router as system_router
 from server.monkeybots_server.router_projects import router as projects_router
 from server.monkeybots_server.router_simulation import router as simulation_router
 from server.monkeybots_server.router_ws import router as ws_router
+from server.monkeybots_server.router_models import router as models_router
 
 log = get_logger("main")
 
@@ -67,6 +68,7 @@ app.include_router(system_router)
 app.include_router(projects_router)
 app.include_router(simulation_router)
 app.include_router(ws_router)
+app.include_router(models_router)
 
 
 @app.get("/")

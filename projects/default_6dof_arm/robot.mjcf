@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+<mujoco model="MonkeyBots_Industrial_6DOF_Arm">
+  <compiler angle="radian" coordinate="local" inertiafromgeom="false"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="RK4"/>
+  <default>
+    <joint damping="0.5" armature="0.02"/>
+    <geom friction="0.8 0.1 0.1" margin="0.001"/>
+  </default>
+  <worldbody>
+    <light directional="true" diffuse="0.8 0.8 0.8" pos="0 0 3" dir="0 0 -1"/>
+    <geom name="floor" type="plane" size="5 5 0.1" rgba="0.15 0.18 0.25 1"/>
+    <body name="base_link" pos="0 0 0">
+      <inertial pos="0.0 0.0 0.04" mass="4.0" fullinertia="0.021733 0.021733 0.0392 0.0 0.0 0.0"/>
+      <geom name="base_link_vis_0" pos="0.0 0.0 0.04" rgba="0.2 0.3 0.4 1.0" contype="0" conaffinity="0" type="cylinder" size="0.14 0.04"/>
+      <body name="link_1" pos="0.0 0.0 0.08">
+        <joint name="joint_1" type="hinge" axis="0.0 0.0 1.0" range="-3.141592653589793 3.141592653589793" damping="0.5" frictionloss="0.1" armature="0.01"/>
+        <inertial pos="0.0 0.0 0.06" mass="3.7" fullinertia="0.011933 0.011933 0.014985 0.0 0.0 0.0"/>
+        <geom name="link_1_vis_0" pos="0.0 0.0 0.06" rgba="0.85 0.6 0.2 1.0" contype="0" conaffinity="0" type="cylinder" size="0.09 0.06"/>
+        <body name="link_2" pos="0.0 0.0 0.12">
+          <joint name="joint_2" type="hinge" axis="0.0 1.0 0.0" range="-1.5707963267948966 1.5707963267948966" damping="0.5" frictionloss="0.1" armature="0.01"/>
+          <inertial pos="0.0 0.0 0.212" mass="8.39" fullinertia="0.130762 0.130762 0.008949 0.0 0.0 0.0"/>
+          <geom name="link_2_vis_0" pos="0.0 0.0 0.212" rgba="0.85 0.6 0.2 1.0" contype="0" conaffinity="0" type="box" size="0.04 0.04 0.2125"/>
+          <body name="link_3" pos="0.0 0.0 0.425">
+            <joint name="joint_3" type="hinge" axis="0.0 1.0 0.0" range="-1.5707963267948966 1.5707963267948966" damping="0.4" frictionloss="0.08" armature="0.01"/>
+            <inertial pos="0.0 0.0 0.196" mass="4.27" fullinertia="0.056422 0.056422 0.003487 0.0 0.0 0.0"/>
+            <geom name="link_3_vis_0" pos="0.0 0.0 0.196" rgba="0.85 0.6 0.2 1.0" contype="0" conaffinity="0" type="box" size="0.035 0.035 0.196"/>
+            <body name="link_4" pos="0.0 0.0 0.392">
+              <joint name="joint_4" type="hinge" axis="0.0 1.0 0.0" range="-3.141592653589793 3.141592653589793" damping="0.2" frictionloss="0.04" armature="0.01"/>
+              <inertial pos="0.0 0.0 0.045" mass="1.8" fullinertia="0.002126 0.002126 0.001822 0.0 0.0 0.0"/>
+              <geom name="link_4_vis_0" pos="0.0 0.0 0.045" rgba="0.85 0.6 0.2 1.0" contype="0" conaffinity="0" type="cylinder" size="0.045 0.045"/>
+              <body name="link_5" pos="0.0 0.0 0.09">
+                <joint name="joint_5" type="hinge" axis="0.0 0.0 1.0" range="-3.141592653589793 3.141592653589793" damping="0.2" frictionloss="0.04" armature="0.01"/>
+                <inertial pos="0.0 0.0 0.04" mass="1.5" fullinertia="0.0014 0.0014 0.0012 0.0 0.0 0.0"/>
+                <geom name="link_5_vis_0" pos="0.0 0.0 0.04" rgba="0.85 0.6 0.2 1.0" contype="0" conaffinity="0" type="cylinder" size="0.04 0.04"/>
+                <body name="link_6" pos="0.0 0.0 0.08">
+                  <joint name="joint_6" type="hinge" axis="1.0 0.0 0.0" range="-3.141592653589793 3.141592653589793" damping="0.1" frictionloss="0.02" armature="0.01"/>
+                  <inertial pos="0.0 0.0 0.015" mass="0.87" fullinertia="0.000413 0.000413 0.000696 0.0 0.0 0.0"/>
+                  <geom name="link_6_vis_0" pos="0.0 0.0 0.015" rgba="0.85 0.6 0.2 1.0" contype="0" conaffinity="0" type="cylinder" size="0.04 0.015"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <actuator>
+    <motor name="motor_joint_1" joint="joint_1" ctrlrange="-150.0 150.0"/>
+    <motor name="motor_joint_2" joint="joint_2" ctrlrange="-150.0 150.0"/>
+    <motor name="motor_joint_3" joint="joint_3" ctrlrange="-150.0 150.0"/>
+    <motor name="motor_joint_4" joint="joint_4" ctrlrange="-28.0 28.0"/>
+    <motor name="motor_joint_5" joint="joint_5" ctrlrange="-28.0 28.0"/>
+    <motor name="motor_joint_6" joint="joint_6" ctrlrange="-28.0 28.0"/>
+  </actuator>
+</mujoco>
