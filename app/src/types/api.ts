@@ -63,11 +63,18 @@ export interface ProjectManifest {
 
 export interface SimStatus {
   is_active: boolean;
-  status: "RUNNING" | "PAUSED" | "STOPPED";
-  model_name: string;
+  status: "STOPPED" | "RUNNING" | "PAUSED" | "DIVERGED";
+  model_name?: string;
   timestep: number;
   sim_time: number;
   step_count: number;
+  real_time_factor?: number;
+  dof?: number;
+  energy?: {
+    kinetic_joules: number;
+    potential_joules: number;
+    total_joules: number;
+  };
 }
 
 export interface Pose3D {
@@ -105,4 +112,72 @@ export interface LogEntry {
   level: "INFO" | "WARNING" | "ERROR" | "DEBUG";
   source: string;
   message: string;
+}
+
+
+export interface KinematicChainJoint {
+  name: string;
+  type: string;
+  parent_link: string;
+  child_link: string;
+  lower_limit_rad: number;
+  upper_limit_rad: number;
+  lower_limit_deg: number;
+  upper_limit_deg: number;
+  axis: [number, number, number];
+  origin_xyz: [number, number, number];
+}
+
+export interface KinematicChainInfo {
+  robot_id: string;
+  base_link: string;
+  end_effector_link: string;
+  dof: number;
+  joints: KinematicChainJoint[];
+  links: string[];
+}
+
+export interface JacobianAnalysisData {
+  jacobian: number[][];
+  singular_values: number[];
+  manipulability: number;
+  condition_number: number;
+  is_singular: boolean;
+  sigma_min: number;
+  sigma_max: number;
+}
+
+export interface FKResultData {
+  position: [number, number, number];
+  quaternion: [number, number, number, number];
+  rpy_rad: [number, number, number];
+  rpy_deg: [number, number, number];
+  transform_matrix: number[][];
+  link_transforms: Record<string, number[][]>;
+  jacobian_analysis?: JacobianAnalysisData;
+  warnings?: string[];
+  dof?: number;
+}
+
+export interface IKResultData {
+  converged: boolean;
+  status: string;
+  joint_positions_rad: number[];
+  joint_positions_deg: number[];
+  position_error_mm: number;
+  position_error_m: number;
+  orientation_error_deg: number;
+  orientation_error_rad: number;
+  iterations: number;
+  manipulability: number;
+  is_singular: boolean;
+  warnings: string[];
+  achieved_pose?: FKResultData;
+}
+
+export interface PosePreset {
+  name: string;
+  description: string;
+  joints_rad: number[];
+  target_pos: [number, number, number];
 }

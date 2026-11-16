@@ -101,3 +101,68 @@ export async function exportRobotMJCF(model: any): Promise<{
   if (!res.ok) throw new Error("MJCF export failed");
   return res.json();
 }
+
+// Kinematics APIs
+export async function fetchKinematicChain(robotId: string = "default_6dof_arm"): Promise<any> {
+  const res = await fetch(`${BASE_URL}/kinematics/chain?robot_id=${encodeURIComponent(robotId)}`, {
+    method: "GET",
+  });
+  if (!res.ok) throw new Error("Failed to load kinematic chain");
+  return res.json();
+}
+
+export async function calculateFK(
+  jointPositions: number[],
+  robotId: string = "default_6dof_arm"
+): Promise<any> {
+  const res = await fetch(`${BASE_URL}/kinematics/fk`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      robot_id: robotId,
+      joint_positions: jointPositions,
+    }),
+  });
+  if (!res.ok) throw new Error("Forward kinematics calculation failed");
+  return res.json();
+}
+
+export async function calculateIK(params: {
+  robotId?: string;
+  targetPosition: [number, number, number];
+  targetRpyDeg?: [number, number, number];
+  targetRpyRad?: [number, number, number];
+  targetQuaternion?: [number, number, number, number];
+  initialSeed?: number[];
+  method?: string;
+  posToleranceM?: number;
+  rotToleranceRad?: number;
+  maxIterations?: number;
+}): Promise<any> {
+  const res = await fetch(`${BASE_URL}/kinematics/ik`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      robot_id: params.robotId || "default_6dof_arm",
+      target_position: params.targetPosition,
+      target_rpy_deg: params.targetRpyDeg,
+      target_rpy_rad: params.targetRpyRad,
+      target_quaternion: params.targetQuaternion,
+      initial_seed: params.initialSeed,
+      method: params.method || "damped_least_squares",
+      pos_tolerance_m: params.posToleranceM ?? 1e-4,
+      rot_tolerance_rad: params.rotToleranceRad ?? 1e-3,
+      max_iterations: params.maxIterations ?? 150,
+    }),
+  });
+  if (!res.ok) throw new Error("Inverse kinematics calculation failed");
+  return res.json();
+}
+
+export async function fetchPosePresets(robotId: string = "default_6dof_arm"): Promise<any> {
+  const res = await fetch(`${BASE_URL}/kinematics/presets?robot_id=${encodeURIComponent(robotId)}`, {
+    method: "GET",
+  });
+  if (!res.ok) throw new Error("Failed to load pose presets");
+  return res.json();
+}
