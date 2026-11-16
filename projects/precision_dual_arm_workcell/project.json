@@ -1,0 +1,141 @@
+{
+  "version": "1.1.0",
+  "metadata": {
+    "id": "precision_dual_arm_workcell",
+    "name": "Cooperative Dual-Arm Bimanual Workcell",
+    "description": "Coordinated bimanual workcell consisting of twin synchronized 6-DOF industrial arms mounted opposite a precision fixture table for cooperative object handling.",
+    "created_at": "2026-11-16T22:10:00Z",
+    "updated_at": "2026-11-16T22:10:00Z",
+    "author": "MonkeyBots Robotics Systems",
+    "robot_type": "Dual-Arm Bimanual System",
+    "tags": [
+      "bimanual",
+      "dual-arm",
+      "cooperative",
+      "workcell"
+    ]
+  },
+  "robot": {
+    "model_file": "robot.mjcf",
+    "urdf_file": "robot.urdf",
+    "dof": 12,
+    "end_effector_site": "right_flange",
+    "default_qpos": [
+      0.0,
+      -0.6,
+      1.2,
+      0.0,
+      0.6,
+      0.0,
+      0.0,
+      -0.6,
+      1.2,
+      0.0,
+      0.6,
+      0.0
+    ]
+  },
+  "physics": {
+    "timestep": 0.002,
+    "integrator": "RK4",
+    "gravity": [
+      0.0,
+      0.0,
+      -9.81
+    ],
+    "collision_tolerance": 0.001,
+    "solver": "Newton",
+    "iterations": 50
+  },
+  "controllers": {
+    "default_mode": "position",
+    "gains": [
+      {
+        "joint": "left_j1",
+        "kp": 350.0,
+        "ki": 0.5,
+        "kd": 25.0,
+        "max_torque": 150.0
+      },
+      {
+        "joint": "left_j2",
+        "kp": 450.0,
+        "ki": 1.0,
+        "kd": 40.0,
+        "max_torque": 150.0
+      },
+      {
+        "joint": "left_j3",
+        "kp": 300.0,
+        "ki": 0.5,
+        "kd": 20.0,
+        "max_torque": 150.0
+      },
+      {
+        "joint": "left_j4",
+        "kp": 150.0,
+        "ki": 0.1,
+        "kd": 10.0,
+        "max_torque": 28.0
+      },
+      {
+        "joint": "left_j5",
+        "kp": 150.0,
+        "ki": 0.1,
+        "kd": 10.0,
+        "max_torque": 28.0
+      },
+      {
+        "joint": "left_j6",
+        "kp": 80.0,
+        "ki": 0.05,
+        "kd": 5.0,
+        "max_torque": 28.0
+      },
+      {
+        "joint": "right_j1",
+        "kp": 350.0,
+        "ki": 0.5,
+        "kd": 25.0,
+        "max_torque": 150.0
+      },
+      {
+        "joint": "right_j2",
+        "kp": 450.0,
+        "ki": 1.0,
+        "kd": 40.0,
+        "max_torque": 150.0
+      },
+      {
+        "joint": "right_j3",
+        "kp": 300.0,
+        "ki": 0.5,
+        "kd": 20.0,
+        "max_torque": 150.0
+      },
+      {
+        "joint": "right_j4",
+        "kp": 150.0,
+        "ki": 0.1,
+        "kd": 10.0,
+        "max_torque": 28.0
+      },
+      {
+        "joint": "right_j5",
+        "kp": 150.0,
+        "ki": 0.1,
+        "kd": 10.0,
+        "max_torque": 28.0
+      },
+      {
+        "joint": "right_j6",
+        "kp": 80.0,
+        "ki": 0.05,
+        "kd": 5.0,
+        "max_torque": 28.0
+      }
+    ]
+  },
+  "trajectories": [],
+  "geometry_assets": []
+}

@@ -1,0 +1,77 @@
+{
+  "version": "1.1.0",
+  "metadata": {
+    "id": "scara_assembly_robot",
+    "name": "High-Speed SCARA 4-DOF Assembly Manipulator",
+    "description": "High-throughput 4-axis SCARA manipulator (RRPR kinematics) engineered for electronic component insertion and rapid pick-and-place packaging.",
+    "created_at": "2026-11-16T22:00:00Z",
+    "updated_at": "2026-11-16T22:00:00Z",
+    "author": "MonkeyBots Robotics Systems",
+    "robot_type": "SCARA Manipulator",
+    "tags": [
+      "scara",
+      "assembly",
+      "pick-and-place",
+      "high-speed"
+    ]
+  },
+  "robot": {
+    "model_file": "robot.mjcf",
+    "urdf_file": "robot.urdf",
+    "dof": 4,
+    "end_effector_site": "tool_tip",
+    "default_qpos": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "physics": {
+    "timestep": 0.001,
+    "integrator": "RK4",
+    "gravity": [
+      0.0,
+      0.0,
+      -9.81
+    ],
+    "collision_tolerance": 0.0005,
+    "solver": "Newton",
+    "iterations": 60
+  },
+  "controllers": {
+    "default_mode": "position",
+    "gains": [
+      {
+        "joint": "scara_joint_1",
+        "kp": 600.0,
+        "ki": 1.5,
+        "kd": 45.0,
+        "max_torque": 200.0
+      },
+      {
+        "joint": "scara_joint_2",
+        "kp": 450.0,
+        "ki": 1.0,
+        "kd": 30.0,
+        "max_torque": 150.0
+      },
+      {
+        "joint": "scara_joint_z",
+        "kp": 800.0,
+        "ki": 2.0,
+        "kd": 60.0,
+        "max_torque": 250.0
+      },
+      {
+        "joint": "scara_joint_yaw",
+        "kp": 120.0,
+        "ki": 0.2,
+        "kd": 10.0,
+        "max_torque": 40.0
+      }
+    ]
+  },
+  "trajectories": [],
+  "geometry_assets": []
+}

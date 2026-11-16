@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<robot name="MonkeyBots_SCARA_4DOF">
+  <link name="base_column">
+    <visual>
+      <origin xyz="0 0 0.35" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.12" length="0.70"/></geometry>
+    </visual>
+  </link>
+  <joint name="scara_joint_1" type="revolute">
+    <parent link="base_column"/>
+    <child link="scara_link_1"/>
+    <origin xyz="0 0 0.70" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.617" upper="2.617" effort="200" velocity="4.0"/>
+  </joint>
+  <link name="scara_link_1">
+    <visual>
+      <origin xyz="0.175 0 0" rpy="0 1.570796 0"/>
+      <geometry><cylinder radius="0.06" length="0.35"/></geometry>
+    </visual>
+  </link>
+  <joint name="scara_joint_2" type="revolute">
+    <parent link="scara_link_1"/>
+    <child link="scara_link_2"/>
+    <origin xyz="0.35 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.79" upper="2.79" effort="150" velocity="4.5"/>
+  </joint>
+  <link name="scara_link_2">
+    <visual>
+      <origin xyz="0.15 0 0" rpy="0 1.570796 0"/>
+      <geometry><cylinder radius="0.05" length="0.30"/></geometry>
+    </visual>
+  </link>
+  <joint name="scara_joint_z" type="prismatic">
+    <parent link="scara_link_2"/>
+    <child link="quill_shaft"/>
+    <origin xyz="0.30 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.20" upper="0.05" effort="250" velocity="1.5"/>
+  </joint>
+  <link name="quill_shaft">
+    <visual>
+      <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.018" length="0.36"/></geometry>
+    </visual>
+  </link>
+  <joint name="scara_joint_yaw" type="revolute">
+    <parent link="quill_shaft"/>
+    <child link="wrist_roll"/>
+    <origin xyz="0 0 -0.15" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-6.28" upper="6.28" effort="40" velocity="8.0"/>
+  </joint>
+  <link name="wrist_roll">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.025" length="0.04"/></geometry>
+    </visual>
+  </link>
+</robot>

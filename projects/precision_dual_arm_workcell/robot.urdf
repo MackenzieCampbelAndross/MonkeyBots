@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<robot name="MonkeyBots_DualArm_Workcell">
+  <link name="world"/>
+  <joint name="table_joint" type="fixed">
+    <parent link="world"/>
+    <child link="central_table"/>
+    <origin xyz="0 0 0.35" rpy="0 0 0"/>
+  </joint>
+  <link name="central_table">
+    <visual>
+      <geometry><box size="0.8 1.2 0.7"/></geometry>
+    </visual>
+  </link>
+  <joint name="left_base_joint" type="fixed">
+    <parent link="world"/>
+    <child link="left_base"/>
+    <origin xyz="-0.6 0 0.35" rpy="0 0 0"/>
+  </joint>
+  <link name="left_base"/>
+  <joint name="right_base_joint" type="fixed">
+    <parent link="world"/>
+    <child link="right_base"/>
+    <origin xyz="0.6 0 0.35" rpy="0 0 0"/>
+  </joint>
+  <link name="right_base"/>
+</robot>

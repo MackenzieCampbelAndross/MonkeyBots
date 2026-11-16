@@ -1,0 +1,88 @@
+<mujoco model="MonkeyBots_DualArm_Workcell">
+  <compiler angle="radian" coordinate="local" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="RK4"/>
+  <asset>
+    <material name="aluminum" rgba="0.82 0.84 0.87 1.0" roughness="0.4"/>
+    <material name="left_arm_mat" rgba="0.15 0.55 0.95 1.0"/>
+    <material name="right_arm_mat" rgba="0.95 0.45 0.15 1.0"/>
+    <material name="worktable_mat" rgba="0.22 0.25 0.30 1.0"/>
+  </asset>
+  <worldbody>
+    <geom name="floor" type="plane" size="4 4 0.1" rgba="0.1 0.12 0.15 1.0"/>
+    <geom name="central_table" type="box" size="0.4 0.6 0.35" pos="0 0 0.35" material="worktable_mat"/>
+    
+    <!-- Left Manipulator (-0.6m in X) -->
+    <body name="left_base" pos="-0.6 0 0.35">
+      <geom name="left_base_geom" type="cylinder" size="0.08 0.1" pos="0 0 0.1" material="left_arm_mat"/>
+      <body name="left_link1" pos="0 0 0.2">
+        <joint name="left_j1" type="hinge" axis="0 0 1" range="-3.14 3.14"/>
+        <geom name="l_l1" type="cylinder" size="0.05 0.1" pos="0 0 0.1" material="aluminum"/>
+        <body name="left_link2" pos="0 0 0.2">
+          <joint name="left_j2" type="hinge" axis="0 1 0" range="-2.0 2.0"/>
+          <geom name="l_l2" type="capsule" size="0.04" fromto="0 0 0 0 0 0.3" material="left_arm_mat"/>
+          <body name="left_link3" pos="0 0 0.3">
+            <joint name="left_j3" type="hinge" axis="0 1 0" range="-2.5 2.5"/>
+            <geom name="l_l3" type="capsule" size="0.035" fromto="0 0 0 0 0 0.25" material="aluminum"/>
+            <body name="left_link4" pos="0 0 0.25">
+              <joint name="left_j4" type="hinge" axis="0 0 1" range="-3.14 3.14"/>
+              <geom name="l_l4" type="cylinder" size="0.03 0.05" material="left_arm_mat"/>
+              <body name="left_link5" pos="0 0 0.08">
+                <joint name="left_j5" type="hinge" axis="0 1 0" range="-2.0 2.0"/>
+                <geom name="l_l5" type="cylinder" size="0.025 0.04" material="aluminum"/>
+                <body name="left_link6" pos="0 0 0.06">
+                  <joint name="left_j6" type="hinge" axis="0 0 1" range="-3.14 3.14"/>
+                  <geom name="l_l6" type="cylinder" size="0.025 0.02" material="left_arm_mat"/>
+                  <site name="left_flange" pos="0 0 0.02" size="0.01"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- Right Manipulator (+0.6m in X) -->
+    <body name="right_base" pos="0.6 0 0.35">
+      <geom name="right_base_geom" type="cylinder" size="0.08 0.1" pos="0 0 0.1" material="right_arm_mat"/>
+      <body name="right_link1" pos="0 0 0.2">
+        <joint name="right_j1" type="hinge" axis="0 0 1" range="-3.14 3.14"/>
+        <geom name="r_l1" type="cylinder" size="0.05 0.1" pos="0 0 0.1" material="aluminum"/>
+        <body name="right_link2" pos="0 0 0.2">
+          <joint name="right_j2" type="hinge" axis="0 1 0" range="-2.0 2.0"/>
+          <geom name="r_l2" type="capsule" size="0.04" fromto="0 0 0 0 0 0.3" material="right_arm_mat"/>
+          <body name="right_link3" pos="0 0 0.3">
+            <joint name="right_j3" type="hinge" axis="0 1 0" range="-2.5 2.5"/>
+            <geom name="r_l3" type="capsule" size="0.035" fromto="0 0 0 0 0 0.25" material="aluminum"/>
+            <body name="right_link4" pos="0 0 0.25">
+              <joint name="right_j4" type="hinge" axis="0 0 1" range="-3.14 3.14"/>
+              <geom name="r_l4" type="cylinder" size="0.03 0.05" material="right_arm_mat"/>
+              <body name="right_link5" pos="0 0 0.08">
+                <joint name="right_j5" type="hinge" axis="0 1 0" range="-2.0 2.0"/>
+                <geom name="r_l5" type="cylinder" size="0.025 0.04" material="aluminum"/>
+                <body name="right_link6" pos="0 0 0.06">
+                  <joint name="right_j6" type="hinge" axis="0 0 1" range="-3.14 3.14"/>
+                  <geom name="r_l6" type="cylinder" size="0.025 0.02" material="right_arm_mat"/>
+                  <site name="right_flange" pos="0 0 0.02" size="0.01"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <actuator>
+    <motor name="act_l1" joint="left_j1" ctrlrange="-150 150"/>
+    <motor name="act_l2" joint="left_j2" ctrlrange="-150 150"/>
+    <motor name="act_l3" joint="left_j3" ctrlrange="-150 150"/>
+    <motor name="act_l4" joint="left_j4" ctrlrange="-28 28"/>
+    <motor name="act_l5" joint="left_j5" ctrlrange="-28 28"/>
+    <motor name="act_l6" joint="left_j6" ctrlrange="-28 28"/>
+    <motor name="act_r1" joint="right_j1" ctrlrange="-150 150"/>
+    <motor name="act_r2" joint="right_j2" ctrlrange="-150 150"/>
+    <motor name="act_r3" joint="right_j3" ctrlrange="-150 150"/>
+    <motor name="act_r4" joint="right_j4" ctrlrange="-28 28"/>
+    <motor name="act_r5" joint="right_j5" ctrlrange="-28 28"/>
+    <motor name="act_r6" joint="right_j6" ctrlrange="-28 28"/>
+  </actuator>
+</mujoco>

@@ -11,6 +11,7 @@ import asyncio
 from fastapi import APIRouter, status
 from pydantic import BaseModel
 from core.monkeybots.config import settings
+from core.monkeybots.diagnostics import run_system_diagnostics, SystemDiagnosticsReport
 from server.monkeybots_server.utils.logger import get_logger
 
 router = APIRouter(prefix="/api/v1/system", tags=["System & Health"])
@@ -55,6 +56,12 @@ async def get_health():
         memory_percent=mem.percent,
         mujoco_available=mujoco_ok,
     )
+
+
+@router.get("/diagnostics", response_model=SystemDiagnosticsReport)
+async def get_diagnostics():
+    """Performs deep local system audit (Python runtime, MuJoCo, RAM, storage, offline verification)."""
+    return run_system_diagnostics()
 
 
 @router.post("/shutdown")
