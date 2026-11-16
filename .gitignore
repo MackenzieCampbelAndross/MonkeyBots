@@ -49,6 +49,10 @@ Thumbs.db
 
 # Simulation & Telemetry Output Logs (Keep templates, ignore generated runs)
 projects/*/.runs/
+projects/*/.snapshots/
+projects/backups/*.mbpkg
 *.simlog
 *.h5
 *.bag
+*.bak
+*.tmp*

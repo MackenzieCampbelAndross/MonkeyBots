@@ -19,10 +19,21 @@ export interface ProjectSummary {
   id: string;
   name: string;
   description: string;
+  robot_type?: string;
+  author?: string;
+  created_at?: string;
+  updated_at?: string;
   path: string;
   dof: number;
   has_mjcf: boolean;
   has_urdf: boolean;
+  size_bytes?: number;
+  integrity_status?: "HEALTHY" | "WARNING" | "ERROR";
+  missing_assets_count?: number;
+  experiments_count?: number;
+  trajectories_count?: number;
+  reports_count?: number;
+  snapshots_count?: number;
 }
 
 export interface JointGain {
@@ -36,11 +47,15 @@ export interface JointGain {
 export interface ProjectManifest {
   version: string;
   metadata: {
+    id?: string;
     name: string;
     description: string;
     created_at: string;
     updated_at: string;
     author: string;
+    robot_type?: string;
+    tags?: string[];
+    version_tag?: string;
   };
   robot: {
     model_file: string;
@@ -48,17 +63,88 @@ export interface ProjectManifest {
     dof: number;
     end_effector_site: string;
     default_qpos: number[];
+    base_link?: string;
+    flange_link?: string;
   };
   physics: {
     timestep: number;
     integrator: string;
     gravity: [number, number, number];
     collision_tolerance: number;
+    solver?: string;
+    iterations?: number;
   };
   controllers: {
     default_mode: string;
     gains: JointGain[];
   };
+  materials?: Record<string, {
+    name: string;
+    rgba: number[];
+    friction: number[];
+    density: number;
+    roughness: number;
+  }>;
+  assets?: Array<{
+    name: string;
+    relative_path: string;
+    format: string;
+    scale: number[];
+  }>;
+  trajectories?: Array<{
+    id: string;
+    name: string;
+    relative_path: string;
+    interpolation: string;
+    waypoints_count: number;
+    duration_s: number;
+  }>;
+  experiments?: string[];
+  reports?: string[];
+}
+
+export interface AssetVerificationResult {
+  name: string;
+  relative_path: string;
+  exists: boolean;
+  size_bytes: number;
+  format: string;
+  status: "VALID" | "MISSING" | "CORRUPT" | "ABSOLUTE_PATH_FORBIDDEN";
+}
+
+export interface ProjectIntegrityReport {
+  project_id: string;
+  is_valid: boolean;
+  status: "HEALTHY" | "WARNING" | "ERROR";
+  manifest_valid: boolean;
+  model_mjcf_valid: boolean;
+  model_urdf_valid: boolean;
+  total_assets: number;
+  missing_assets_count: number;
+  assets: AssetVerificationResult[];
+  experiments_count: number;
+  trajectories_count: number;
+  reports_count: number;
+  snapshots_count: number;
+  warnings: string[];
+  errors: string[];
+  file_inventory: Record<string, number>;
+}
+
+export interface CreateProjectPayload {
+  name: string;
+  description?: string;
+  robot_preset?: "6dof_industrial" | "workcell" | "blank";
+  author?: string;
+  robot_type?: string;
+  tags?: string[];
+}
+
+export interface BackupItem {
+  filename: string;
+  path: string;
+  size_bytes: number;
+  created_at: string;
 }
 
 export interface SimStatus {

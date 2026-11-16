@@ -13,6 +13,9 @@ import type {
   ExperimentResultData,
   ExperimentSummaryItem,
   ExperimentComparisonData,
+  ProjectIntegrityReport,
+  CreateProjectPayload,
+  BackupItem,
 } from "../types/api";
 
 const BASE_URL = "http://127.0.0.1:8765/api/v1";
@@ -37,6 +40,152 @@ export async function fetchProjectDetails(projectId: string): Promise<ProjectMan
   const res = await fetch(`${BASE_URL}/projects/${projectId}`, { method: "GET" });
   if (!res.ok) {
     throw new Error(`Failed to load project '${projectId}': ${res.status}`);
+  }
+  return res.json();
+}
+
+// Stage 11: Local Project Management APIs
+export async function createProject(payload: CreateProjectPayload): Promise<ProjectManifest> {
+  const res = await fetch(`${BASE_URL}/projects/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Project creation failed" }));
+    throw new Error(err.detail || `Failed to create project: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function saveProject(projectId: string, manifest: ProjectManifest): Promise<ProjectManifest> {
+  const res = await fetch(`${BASE_URL}/projects/${projectId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(manifest),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Save failed" }));
+    throw new Error(err.detail || `Failed to save project: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function saveProjectAs(projectId: string, newName: string, newId?: string): Promise<ProjectManifest> {
+  const res = await fetch(`${BASE_URL}/projects/${projectId}/save-as`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ new_name: newName, new_id: newId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Save-as failed" }));
+    throw new Error(err.detail || `Save As failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function duplicateProject(projectId: string, newName?: string): Promise<ProjectManifest> {
+  const url = newName
+    ? `${BASE_URL}/projects/${projectId}/duplicate?new_name=${encodeURIComponent(newName)}`
+    : `${BASE_URL}/projects/${projectId}/duplicate`;
+  const res = await fetch(url, { method: "POST" });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Duplicate failed" }));
+    throw new Error(err.detail || `Duplicate failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function renameProject(projectId: string, newName: string): Promise<ProjectManifest> {
+  const res = await fetch(`${BASE_URL}/projects/${projectId}/rename`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ new_name: newName }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Rename failed" }));
+    throw new Error(err.detail || `Rename failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function deleteProject(projectId: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/projects/${projectId}?confirm=true`, { method: "DELETE" });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Delete failed" }));
+    throw new Error(err.detail || `Failed to delete project: ${res.status}`);
+  }
+}
+
+export async function validateProject(projectId: string): Promise<ProjectIntegrityReport> {
+  const res = await fetch(`${BASE_URL}/projects/${projectId}/validate`, { method: "GET" });
+  if (!res.ok) {
+    throw new Error(`Failed to validate project: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function createProjectBackup(projectId: string): Promise<any> {
+  const res = await fetch(`${BASE_URL}/projects/${projectId}/backup`, { method: "POST" });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Backup failed" }));
+    throw new Error(err.detail || `Backup failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchProjectBackups(projectId?: string): Promise<{ backups: BackupItem[] }> {
+  const url = projectId
+    ? `${BASE_URL}/projects/backups?project_id=${encodeURIComponent(projectId)}`
+    : `${BASE_URL}/projects/backups`;
+  const res = await fetch(url, { method: "GET" });
+  if (!res.ok) throw new Error("Failed to fetch backups");
+  return res.json();
+}
+
+export async function restoreProjectBackup(backupFile: string, newProjectId?: string): Promise<ProjectManifest> {
+  const res = await fetch(`${BASE_URL}/projects/restore-backup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ backup_file: backupFile, new_project_id: newProjectId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Restore failed" }));
+    throw new Error(err.detail || `Restore failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function importProjectModel(
+  projectId: string,
+  sourceModelPath: string,
+  destinationFilename?: string
+): Promise<ProjectManifest> {
+  const res = await fetch(`${BASE_URL}/projects/${projectId}/import-model`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ source_model_path: sourceModelPath, destination_filename: destinationFilename }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Import model failed" }));
+    throw new Error(err.detail || `Import failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function exportProjectModel(
+  projectId: string,
+  exportDir: string,
+  formatType: string = "bundle"
+): Promise<any> {
+  const res = await fetch(`${BASE_URL}/projects/${projectId}/export-model`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ export_dir: exportDir, format_type: formatType }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Export model failed" }));
+    throw new Error(err.detail || `Export failed: ${res.status}`);
   }
   return res.json();
 }
