@@ -1,0 +1,29 @@
+# MonkeyBots Core Simulation & Backend Dependencies
+# Verified on Windows 11 x64, Python 3.11
+
+# Physics Simulation Kernel
+mujoco>=3.1.0,<=4.0.1
+glfw>=2.7.0
+PyOpenGL>=3.1.7
+
+# Scientific Computing & Math
+numpy>=1.26.0,<3.0.0
+scipy>=1.11.0,<2.0.0
+
+# 3D Geometry Processing (Convex hulls, mesh decimation, inertia calculation)
+open3d>=0.18.0,<=0.20.0
+
+# Backend API & High-Frequency Streaming
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+websockets>=12.0
+pydantic>=2.6.0,<3.0.0
+pydantic-settings>=2.2.0
+
+# Robot Description & File Formats
+xmltodict>=0.13.0
+pyyaml>=6.0.1
+
+# Performance Monitoring & Utilities
+psutil>=5.9.0
+loguru>=0.7.2

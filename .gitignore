@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+
+# Node / Frontend
+node_modules/
+.npm/
+.vite/
+app/dist/
+app/dist-ssr/
+*.local
+
+# Tauri / Rust
+app/src-tauri/target/
+Cargo.lock
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Simulation & Telemetry Output Logs (Keep templates, ignore generated runs)
+projects/*/.runs/
+*.simlog
+*.h5
+*.bag
