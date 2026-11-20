@@ -54,3 +54,12 @@ $$\tau(t) = K_p e(t) + K_i \int_0^t e(\tau) d\tau + K_d \frac{d e_f(t)}{dt} + \t
 - **Anti-Windup:** Integrator clamped to $[-\tau_{\text{clamp}}, \tau_{\text{clamp}}]$.
 - **Derivative Filter:** First-order low-pass filter $\alpha$ eliminates quantization noise.
 - **Feedforward Gravity Compensation:** $\tau_{\text{grav\_comp}} = \mathbf{g}(\mathbf{q})$ extracted from MuJoCo generalized forces (`qfrc_bias`).
+
+
+## 5. Yoshikawa Manipulability & Null-Space Control
+
+### Yoshikawa Manipulability Index
+$$w(q) = \sqrt{\det(J(q) J(q)^T)} = \prod_{i=1}^m \sigma_i$$
+
+### Redundant Kinematic Null-Space Projection
+$$\dot{q} = J^\dagger \dot{x}_e + (I - J^\dagger J) \nabla H(q)$$
