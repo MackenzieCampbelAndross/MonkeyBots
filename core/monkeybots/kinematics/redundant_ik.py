@@ -53,3 +53,12 @@ class RedundantIKSolver:
             q_dot_secondary = N @ secondary_gradient
             return q_dot_primary + q_dot_secondary
         return q_dot_primary
+
+
+def compute_adaptive_damping(J: np.ndarray, lambda_max: float = 0.05, epsilon: float = 0.02) -> float:
+    """Calculates adaptive Levenberg-Marquardt damping based on smallest singular value."""
+    s = np.linalg.svd(J, compute_uv=False)
+    sigma_min = float(s[-1]) if len(s) > 0 else 0.0
+    if sigma_min >= epsilon:
+        return 0.0
+    return float(lambda_max * (1.0 - (sigma_min / epsilon) ** 2))
