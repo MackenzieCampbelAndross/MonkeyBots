@@ -1,0 +1,8 @@
+/* High-Contrast Industrial CAD Theme */
+.theme-cad-high-contrast {
+  --cad-bg: #05080e;
+  --cad-panel-bg: #0b121e;
+  --cad-border: #1e293b;
+  --cad-accent: #0ea5e9;
+  --cad-text: #f8fafc;
+}
