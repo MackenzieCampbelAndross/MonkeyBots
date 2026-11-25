@@ -616,3 +616,65 @@ export async function fetchAnalyticsHTML(): Promise<string> {
   if (!res.ok) throw new Error(`HTML report export failed: ${res.status}`);
   return res.text();
 }
+
+// --- Multi-Robot & Advanced Kinematics APIs ---
+
+export async function fetchRobotRegistry(): Promise<{ robots: Array<{ id: string; name: string; dof: number; link_count: number; joint_count: number; root_link: string }> }> {
+  const res = await fetch(`${BASE_URL}/models/registry`, { method: "GET" });
+  if (!res.ok) throw new Error(`Failed to fetch robot registry: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchRobotById(robotId: string): Promise<any> {
+  const res = await fetch(`${BASE_URL}/models/registry/${robotId}`, { method: "GET" });
+  if (!res.ok) throw new Error(`Failed to fetch robot '${robotId}': ${res.status}`);
+  return res.json();
+}
+
+export async function calculateManipulability(robotId: string, jointPositions: number[]): Promise<any> {
+  const res = await fetch(`${BASE_URL}/kinematics/manipulability`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ robot_id: robotId, joint_positions: jointPositions }),
+  });
+  if (!res.ok) throw new Error(`Manipulability calculation failed: ${res.status}`);
+  return res.json();
+}
+
+export async function calculateAnalyticalIK(targetPosition: [number, number, number], targetRpyDeg?: [number, number, number]): Promise<any> {
+  const res = await fetch(`${BASE_URL}/kinematics/analytical-ik`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ target_position: targetPosition, target_rpy_deg: targetRpyDeg || [0, 0, 0] }),
+  });
+  if (!res.ok) throw new Error(`Analytical IK solve failed: ${res.status}`);
+  return res.json();
+}
+
+export async function planRRTPath(params: {
+  robot_id?: string;
+  q_start: number[];
+  q_goal: number[];
+  step_size?: number;
+  goal_bias?: number;
+  max_iterations?: number;
+}): Promise<any> {
+  const res = await fetch(`${BASE_URL}/motion/plan/rrt`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      robot_id: params.robot_id || "default_6dof_arm",
+      q_start: params.q_start,
+      q_goal: params.q_goal,
+      step_size: params.step_size || 0.15,
+      goal_bias: params.goal_bias || 0.15,
+      max_iterations: params.max_iterations || 1500,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "RRT planning failed" }));
+    throw new Error(err.detail || `RRT planning failed: ${res.status}`);
+  }
+  return res.json();
+}
+

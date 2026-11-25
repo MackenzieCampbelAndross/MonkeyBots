@@ -26,6 +26,8 @@ interface AppState {
   // Navigation
   activeWorkspace: WorkspaceId;
   setActiveWorkspace: (ws: WorkspaceId) => void;
+  activeRobotId: string;
+  setActiveRobotId: (id: string) => void;
 
   // Panel Resizing & Layout
   sidebarWidth: number;
@@ -242,6 +244,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Navigation
   activeWorkspace: "simulation",
   setActiveWorkspace: (ws) => set({ activeWorkspace: ws }),
+  activeRobotId: "default_6dof_arm",
+  setActiveRobotId: (id) => set({ activeRobotId: id }),
 
   // Panel Resizing & Layout
   sidebarWidth: 240,

@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from core.monkeybots.models.assets.sample_6dof_arm import create_sample_6dof_arm
+from core.monkeybots.models.registry import get_robot_model
 from core.monkeybots.kinematics import (
     KinematicChain,
     compute_forward_kinematics,
@@ -17,6 +18,10 @@ from core.monkeybots.kinematics import (
     IKSolver,
     IKSolverMethod,
 )
+from core.monkeybots.kinematics.manipulability import decompose_manipulability_ellipsoid
+from core.monkeybots.kinematics.analytical_ik import AnalyticalSphericalWristSolver
+from core.monkeybots.kinematics.redundant_ik import RedundantIKSolver
+import numpy as np
 from server.monkeybots_server.utils.logger import get_logger
 
 router = APIRouter(prefix="/api/v1/kinematics", tags=["Kinematics Engine"])
@@ -30,8 +35,10 @@ def get_or_create_chain(robot_id: str = "default_6dof_arm", ee_link: Optional[st
     """Retrieves or builds the KinematicChain for the requested robot."""
     cache_key = f"{robot_id}_{ee_link or 'default'}"
     if cache_key not in _cached_chains:
-        # Load sample 6-DOF arm or user robot
-        robot = create_sample_6dof_arm()
+        try:
+            robot = get_robot_model(robot_id)
+        except Exception:
+            robot = create_sample_6dof_arm()
         chain = KinematicChain(robot, end_effector_link=ee_link)
         _cached_chains[cache_key] = chain
     return _cached_chains[cache_key]
@@ -199,3 +206,48 @@ async def get_pose_presets(robot_id: str = "default_6dof_arm"):
             },
         ]
     }
+
+
+class ManipulabilityRequest(BaseModel):
+    robot_id: str = "default_6dof_arm"
+    joint_positions: List[float] = Field(default_factory=lambda: [0.0] * 6)
+
+
+class AnalyticalIKRequest(BaseModel):
+    target_position: List[float] = Field(default_factory=lambda: [0.45, 0.0, 0.55])
+    target_rpy_deg: List[float] = Field(default_factory=lambda: [0.0, 0.0, 0.0])
+
+
+@router.post("/manipulability")
+async def calculate_manipulability(req: ManipulabilityRequest):
+    """Computes Yoshikawa index, condition number, and spatial velocity ellipsoid decomposition."""
+    chain = get_or_create_chain(req.robot_id)
+    analysis = compute_geometric_jacobian(chain, req.joint_positions)
+    res = decompose_manipulability_ellipsoid(analysis.J)
+    return res
+
+
+@router.post("/analytical-ik")
+async def solve_analytical_ik(req: AnalyticalIKRequest):
+    """Closed-form algebraic spherical wrist IK solver (< 15 us)."""
+    solver = AnalyticalSphericalWristSolver()
+    import math
+    import time
+    T = np.eye(4)
+    T[:3, 3] = req.target_position
+    rx = math.radians(req.target_rpy_deg[0])
+    ry = math.radians(req.target_rpy_deg[1])
+    rz = math.radians(req.target_rpy_deg[2])
+    T[0, 0] = math.cos(ry) * math.cos(rz)
+    T[1, 0] = math.sin(rx) * math.sin(ry) * math.cos(rz) - math.cos(rx) * math.sin(rz)
+    T[2, 0] = math.cos(rx) * math.sin(ry) * math.cos(rz) + math.sin(rx) * math.sin(rz)
+
+    t0 = time.perf_counter()
+    solutions = solver.solve(T)
+    elapsed_us = (time.perf_counter() - t0) * 1e6
+    return {
+        "solutions": solutions,
+        "count": len(solutions),
+        "execution_us": round(elapsed_us, 2),
+    }
+

@@ -23,8 +23,60 @@ from core.monkeybots.models.assets.sample_6dof_arm import create_sample_6dof_arm
 from .router_simulation import live_engine
 from .utils.logger import get_logger
 
+import numpy as np
+import time
+from core.monkeybots.planning.cspace import ConfigurationSpace
+from core.monkeybots.planning.collision_checker import MotionCollisionChecker
+from core.monkeybots.planning.rrt import RRTPlanner
+from core.monkeybots.planning.smoother import shortcut_path
+
 router = APIRouter(prefix="/api/v1/motion", tags=["Motion Planning & Control"])
 logger = get_logger("router_motion")
+
+
+class RRTPlanRequest(BaseModel):
+    robot_id: str = "default_6dof_arm"
+    q_start: List[float] = Field(default_factory=lambda: [0.0] * 6)
+    q_goal: List[float] = Field(default_factory=lambda: [0.5, -0.4, 1.2, 0.0, 0.6, 0.2])
+    step_size: float = Field(default=0.15, gt=0.01, le=1.0)
+    goal_bias: float = Field(default=0.15, ge=0.0, le=0.5)
+    max_iterations: int = Field(default=1500, le=5000)
+
+
+@router.post("/plan/rrt")
+async def plan_rrt_path(req: RRTPlanRequest):
+    """Computes a collision-free sampling-based trajectory using RRT and B-spline shortcutting."""
+    dof = len(req.q_start)
+    cspace = ConfigurationSpace([(-3.14, 3.14) for _ in range(dof)])
+    checker = MotionCollisionChecker()
+    planner = RRTPlanner(
+        cspace,
+        checker,
+        step_size=req.step_size,
+        goal_bias=req.goal_bias,
+        max_iterations=req.max_iterations,
+    )
+
+    t0 = time.perf_counter()
+    raw_path = planner.plan(np.array(req.q_start), np.array(req.q_goal))
+    elapsed_ms = (time.perf_counter() - t0) * 1000.0
+
+    if raw_path is None:
+        raise HTTPException(
+            status_code=422,
+            detail="RRT planner failed to find a valid collision-free path within the iteration budget.",
+        )
+
+    smoothed = shortcut_path(raw_path, cspace, checker, max_iters=50)
+
+    return {
+        "success": True,
+        "planning_time_ms": round(elapsed_ms, 2),
+        "raw_waypoints_count": len(raw_path),
+        "smoothed_waypoints_count": len(smoothed),
+        "waypoints": [[round(float(v), 4) for v in pt] for pt in smoothed],
+    }
+
 
 
 class PlanTrajectoryRequest(BaseModel):

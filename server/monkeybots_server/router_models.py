@@ -12,10 +12,42 @@ from core.monkeybots.models.urdf_parser import export_urdf, import_urdf
 from core.monkeybots.models.mjcf_builder import export_mjcf, validate_in_mujoco
 from core.monkeybots.models.inertia_calculator import compute_geometry_inertia
 from core.monkeybots.models.assets.sample_6dof_arm import create_sample_6dof_arm
+from core.monkeybots.models.registry import ROBOT_REGISTRY, list_available_robots, get_robot_model
 from server.monkeybots_server.utils.logger import get_logger
 
 router = APIRouter(prefix="/api/v1/models", tags=["Robot Modelling & Mechanical Config"])
 logger = get_logger("router_models")
+
+
+@router.get("/registry")
+async def get_robot_registry():
+    """Lists all registered robot models and their mechanical properties."""
+    items = []
+    for key in list_available_robots():
+        try:
+            m = get_robot_model(key)
+            items.append({
+                "id": key,
+                "name": m.name,
+                "dof": m.get_dof(),
+                "link_count": len(m.links),
+                "joint_count": len(m.joints),
+                "root_link": m.root_link,
+            })
+        except Exception as e:
+            logger.warning(f"Failed to load metadata for robot '{key}': {e}")
+    return {"robots": items}
+
+
+@router.get("/registry/{robot_id}", response_model=RobotModel)
+async def get_registered_robot_by_id(robot_id: str):
+    """Instantiates and returns the full RobotModel for a registered robot."""
+    try:
+        return get_robot_model(robot_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Robot '{robot_id}' not found.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 class XMLPayload(BaseModel):

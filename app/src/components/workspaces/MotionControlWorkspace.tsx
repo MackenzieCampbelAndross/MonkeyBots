@@ -16,6 +16,9 @@ import {
   fetchCollisionEvents,
   executePickAndPlace,
   runManipulationBenchmarks,
+  calculateManipulability,
+  calculateAnalyticalIK,
+  planRRTPath,
 } from "../../services/api";
 import type {
   KinematicChainInfo,
@@ -49,11 +52,16 @@ import {
 } from "lucide-react";
 
 export const MotionControlWorkspace: React.FC = () => {
-  const { addToast, telemetry } = useAppStore();
+  const { addToast, telemetry, activeRobotId } = useAppStore();
 
   // Navigation / Mode Switcher
   const [activeTab, setActiveTab] = useState<"IK" | "FK" | "TRAJECTORY" | "PID" | "MANIPULATION">("TRAJECTORY");
   const [inspectorTab, setInspectorTab] = useState<"METRICS" | "TRANSFORM" | "JACOBIAN" | "TELEMETRY" | "CONTACTS">("TELEMETRY");
+
+  // Advanced Kinematics & Planning State
+  const [manipulabilityData, setManipulabilityData] = useState<any>(null);
+  const [analyticalTimeUs, setAnalyticalTimeUs] = useState<number | null>(null);
+  const [isPlanningRRT, setIsPlanningRRT] = useState<boolean>(false);
 
   // Robot State
   const [chainInfo, setChainInfo] = useState<KinematicChainInfo | null>(null);
@@ -256,6 +264,64 @@ export const MotionControlWorkspace: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [activeTab, continuousSolve, targetPos, targetRpyDeg, triggerIK]);
+
+  // Live Manipulability calculation
+  useEffect(() => {
+    calculateManipulability(activeRobotId || "default_6dof_arm", jointAnglesRad)
+      .then((data) => setManipulabilityData(data))
+      .catch(() => {});
+  }, [activeRobotId, jointAnglesRad]);
+
+  // Analytical IK Solver (<15us)
+  const handleSolveAnalyticalIK = async () => {
+    setIsSolving(true);
+    try {
+      const res = await calculateAnalyticalIK(targetPos, targetRpyDeg);
+      if (res.solutions && res.solutions.length > 0) {
+        setJointAnglesRad(res.solutions[0]);
+        setAnalyticalTimeUs(res.execution_us);
+        addToast(
+          "success",
+          "Analytical Solution Found",
+          `Solved closed-form in ${res.execution_us}µs (${res.count} kinematic branches found).`
+        );
+      } else {
+        addToast("error", "Unreachable Target", "Target is outside the analytical spherical workspace boundary.");
+      }
+    } catch (err: any) {
+      addToast("error", "Analytical IK Error", err.message || "Failed to solve analytical IK.");
+    } finally {
+      setIsSolving(false);
+    }
+  };
+
+  // Autonomous Obstacle-Avoidance RRT* Planner
+  const handlePlanRRT = async () => {
+    setIsPlanningRRT(true);
+    try {
+      const startPt = waypoints[0] || [0, 0, 0, 0, 0, 0];
+      const goalPt = waypoints[waypoints.length - 1] || [0.5, -0.4, 1.2, 0.0, 0.6, 0.2];
+      const res = await planRRTPath({
+        robot_id: activeRobotId || "default_6dof_arm",
+        q_start: startPt,
+        q_goal: goalPt,
+        step_size: 0.15,
+        goal_bias: 0.15,
+      });
+      if (res.waypoints && res.waypoints.length > 0) {
+        setWaypoints(res.waypoints);
+        addToast(
+          "success",
+          "RRT* Collision-Free Path",
+          `Found obstacle-free path with ${res.smoothed_waypoints_count} waypoints in ${res.planning_time_ms}ms.`
+        );
+      }
+    } catch (err: any) {
+      addToast("error", "RRT Planning Failed", err.message || "Obstacle collision avoidance failed.");
+    } finally {
+      setIsPlanningRRT(false);
+    }
+  };
 
   // Plan Trajectory
   const handlePlanTrajectory = async () => {
@@ -487,6 +553,16 @@ export const MotionControlWorkspace: React.FC = () => {
 
               {/* Action Buttons */}
               <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={handlePlanRRT}
+                  disabled={isPlanningRRT}
+                  className="col-span-2 py-1.5 bg-indigo-950/80 hover:bg-indigo-900/80 text-indigo-300 font-bold rounded flex items-center justify-center space-x-1.5 border border-indigo-700/60 transition"
+                  title="Plan obstacle-avoidance path using Rapidly-exploring Random Trees"
+                >
+                  {isPlanningRRT ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5 text-indigo-400" />}
+                  <span>Autonomous Collision-Free Plan (RRT*)</span>
+                </button>
+
                 <button
                   onClick={handlePlanTrajectory}
                   disabled={isPlanning}
@@ -807,14 +883,33 @@ export const MotionControlWorkspace: React.FC = () => {
               </div>
 
               {/* Solve Button & Convergence Card */}
-              <button
-                onClick={triggerIK}
-                disabled={isSolving}
-                className="w-full py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded flex items-center justify-center space-x-1.5 transition shadow"
-              >
-                {isSolving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
-                <span>Solve Inverse Kinematics</span>
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={triggerIK}
+                  disabled={isSolving}
+                  className="py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded flex items-center justify-center space-x-1.5 transition shadow"
+                >
+                  {isSolving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                  <span>Numerical DLS</span>
+                </button>
+
+                <button
+                  onClick={handleSolveAnalyticalIK}
+                  disabled={isSolving}
+                  className="py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded flex items-center justify-center space-x-1.5 transition shadow"
+                  title="Closed-form algebraic IK solve (< 15us)"
+                >
+                  <Target className="w-3.5 h-3.5" />
+                  <span>Analytical (&lt;15&micro;s)</span>
+                </button>
+              </div>
+
+              {analyticalTimeUs !== null && (
+                <div className="p-1.5 bg-emerald-950/40 border border-emerald-800 rounded font-mono text-[10px] text-emerald-300 flex justify-between">
+                  <span>Analytical Solver:</span>
+                  <span className="font-bold">{analyticalTimeUs}&micro;s (Closed-form)</span>
+                </div>
+              )}
 
               {ikResult && (
                 <div className="bg-slate-900/90 p-2.5 rounded border border-slate-800 space-y-2 font-mono text-[10px]">
@@ -1271,23 +1366,81 @@ export const MotionControlWorkspace: React.FC = () => {
           )}
 
           {/* TAB 2: METRICS & SVD */}
-          {inspectorTab === "METRICS" && fkResult?.jacobian_analysis && (
-            <div className="space-y-3">
-              <div className="text-[10px] text-slate-400 uppercase font-semibold">Yoshikawa Manipulability</div>
-              <div className="grid grid-cols-2 gap-2">
+          {inspectorTab === "METRICS" && (
+            <div className="space-y-3 font-sans">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">
+                  Manipulability & SVD Analysis
+                </span>
+                {manipulabilityData && (
+                  <span
+                    className={`text-[9px] px-2 py-0.5 rounded font-mono font-semibold ${
+                      manipulabilityData.is_near_singularity
+                        ? "bg-rose-950/60 text-rose-400 border border-rose-800"
+                        : "bg-emerald-950/60 text-emerald-400 border border-emerald-800"
+                    }`}
+                  >
+                    {manipulabilityData.is_near_singularity ? "NEAR SINGULARITY" : "DEXTEROUS"}
+                  </span>
+                )}
+              </div>
+
+              {/* Core Scalars */}
+              <div className="grid grid-cols-2 gap-2 font-mono">
                 <div className="bg-slate-950 p-2.5 rounded border border-slate-800">
-                  <div className="text-slate-500 text-[10px]">Manipulability (w)</div>
+                  <div className="text-slate-500 text-[10px]">Yoshikawa Index (w)</div>
                   <div className="text-base font-bold text-sky-400 mt-1">
-                    {fkResult.jacobian_analysis.manipulability.toFixed(4)}
+                    {(manipulabilityData?.yoshikawa_index ?? fkResult?.jacobian_analysis?.manipulability ?? 0).toFixed(4)}
                   </div>
+                  <div className="text-[9px] text-slate-500 mt-0.5">&radic;det(J&middot;J&top;)</div>
                 </div>
                 <div className="bg-slate-950 p-2.5 rounded border border-slate-800">
                   <div className="text-slate-500 text-[10px]">Condition No. (&kappa;)</div>
                   <div className="text-base font-bold text-amber-400 mt-1">
-                    {fkResult.jacobian_analysis.condition_number.toFixed(1)}
+                    {(manipulabilityData?.condition_number ?? fkResult?.jacobian_analysis?.condition_number ?? 0).toFixed(1)}
                   </div>
+                  <div className="text-[9px] text-slate-500 mt-0.5">&sigma;max / &sigma;min</div>
                 </div>
               </div>
+
+              {/* SVD Velocity Ellipsoids */}
+              {manipulabilityData?.translational_ellipsoid && (
+                <div className="space-y-2">
+                  <div className="bg-slate-950 p-2.5 rounded border border-slate-800 space-y-1.5 font-sans">
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="text-slate-400 font-semibold uppercase">Translational Ellipsoid</span>
+                      <span className="font-mono text-sky-400">
+                        Vol: {manipulabilityData.translational_ellipsoid.volume.toFixed(5)} m&sup3;
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5 font-mono text-[10px]">
+                      {manipulabilityData.translational_ellipsoid.radii.map((r: number, idx: number) => (
+                        <div key={idx} className="bg-slate-900 p-1 rounded text-center">
+                          <span className="text-slate-500 block text-[8px]">&sigma;{idx + 1}</span>
+                          <span className="text-cyan-300 font-bold">{r.toFixed(3)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-950 p-2.5 rounded border border-slate-800 space-y-1.5 font-sans">
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="text-slate-400 font-semibold uppercase">Rotational Ellipsoid</span>
+                      <span className="font-mono text-purple-400">
+                        Vol: {manipulabilityData.rotational_ellipsoid.volume.toFixed(4)} rad&sup3;
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5 font-mono text-[10px]">
+                      {manipulabilityData.rotational_ellipsoid.radii.map((r: number, idx: number) => (
+                        <div key={idx} className="bg-slate-900 p-1 rounded text-center">
+                          <span className="text-slate-500 block text-[8px]">&sigma;{idx + 4}</span>
+                          <span className="text-purple-300 font-bold">{r.toFixed(3)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

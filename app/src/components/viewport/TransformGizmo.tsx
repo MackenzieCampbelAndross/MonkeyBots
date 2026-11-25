@@ -12,10 +12,10 @@ export interface TransformGizmoProps {
 export const TransformGizmo: React.FC<TransformGizmoProps> = ({
   mode,
   position,
-  orientation,
+  orientation: _orientation,
   snapStepMm = 10,
   snapStepDeg = 5,
-  onTransformChange,
+  onTransformChange: _onTransformChange,
 }) => {
   return (
     <div className="absolute bottom-4 right-4 bg-slate-900/90 border border-slate-700 rounded p-2 text-xs text-slate-300 font-mono shadow-lg">

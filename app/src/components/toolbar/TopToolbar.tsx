@@ -28,6 +28,8 @@ export const TopToolbar: React.FC = () => {
     latencyMs,
     activeProjectId,
     projects,
+    activeRobotId,
+    setActiveRobotId,
     simSpeedMultiplier,
     setSimSpeedMultiplier,
     addToast,
@@ -110,6 +112,25 @@ export const TopToolbar: React.FC = () => {
             {activeWorkspace.replace("-", " ")}
           </span>
         </div>
+
+        {/* Robot Model Switcher */}
+        <select
+          value={activeRobotId}
+          onChange={(e) => {
+            const nextId = e.target.value;
+            setActiveRobotId(nextId);
+            addToast("info", "Robot Switched", `Active robot model changed to ${nextId.replace("_", " ").toUpperCase()}`);
+          }}
+          className="bg-slate-950/80 text-sky-400 border border-slate-800 rounded px-2 py-0.5 text-[11px] font-mono focus:outline-none focus:border-sky-500 cursor-pointer"
+          title="Switch Active Robot Model"
+        >
+          <option value="default_6dof_arm">6-DOF Industrial Arm</option>
+          <option value="franka_panda">Franka Emika Panda (7-DOF)</option>
+          <option value="ur5e">Universal Robots UR5e</option>
+          <option value="ur10e">Universal Robots UR10e (12.5kg)</option>
+          <option value="delta_robot">Parallel Delta Robot</option>
+          <option value="mobile_base">Differential Mobile Base</option>
+        </select>
 
         {/* Save Quick Action */}
         <button

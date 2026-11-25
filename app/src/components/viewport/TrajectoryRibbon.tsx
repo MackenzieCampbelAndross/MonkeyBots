@@ -9,7 +9,7 @@ export interface TrajectoryRibbonProps {
 export const TrajectoryRibbon: React.FC<TrajectoryRibbonProps> = ({
   historyPoints,
   maxPoints = 250,
-  ribbonWidth = 0.008,
+  ribbonWidth: _ribbonWidth = 0.008,
 }) => {
   return (
     <div className="absolute top-14 left-4 bg-slate-900/80 border border-slate-800 rounded px-2 py-1 text-[11px] font-mono text-slate-400">

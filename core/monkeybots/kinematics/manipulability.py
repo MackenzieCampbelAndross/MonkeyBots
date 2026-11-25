@@ -32,7 +32,7 @@ def decompose_manipulability_ellipsoid(J: np.ndarray) -> Dict[str, Any]:
     # Full 6D SVD
     _, S_full, _ = np.linalg.svd(J)
 
-    cond_num = float(S_full[0] / S_full[-1]) if S_full[-1] > 1e-9 else float("inf")
+    cond_num = min(100000.0, float(S_full[0] / S_full[-1])) if S_full[-1] > 1e-9 else 100000.0
 
     return {
         "yoshikawa_index": compute_yoshikawa_index(J),
