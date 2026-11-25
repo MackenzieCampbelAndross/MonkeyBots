@@ -13,6 +13,7 @@ import { fetchSample6DofModel } from "../services/api";
 import { RobotVisualizer, type RobotGeometrySpec } from "./viewport/RobotVisualizer";
 import { EnvironmentManager, type EnvironmentObjectSpec } from "./viewport/EnvironmentManager";
 import { ViewportToolbar } from "./viewport/ViewportToolbar";
+import { ManipulabilityEllipsoid } from "./viewport/ManipulabilityEllipsoid";
 import { Compass, Box, Activity } from "lucide-react";
 
 export const Viewport3D: React.FC = () => {
@@ -422,6 +423,7 @@ export const Viewport3D: React.FC = () => {
   return (
     <div className="relative w-full h-full bg-slate-950 overflow-hidden select-none" ref={containerRef}>
       {/* 3D Viewport Controls Toolbar */}
+      <ManipulabilityEllipsoid visible={true} radii={[0.12, 0.09, 0.05]} volume={0.0022} />
       <ViewportToolbar
         onCameraPreset={handleCameraPreset}
         isOrthographic={isOrthographic}
