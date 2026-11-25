@@ -463,6 +463,8 @@ export const MotionControlWorkspace: React.FC = () => {
                 </div>
               </div>
 
+              <TrajectoryPlayer durationS={trajectoryDuration} totalWaypoints={waypoints.length} />
+
               {/* Waypoints Configuration */}
               <div className="bg-slate-950/70 p-2.5 rounded border border-slate-800 space-y-2">
                 <div className="flex items-center justify-between text-[11px] font-semibold text-slate-300">
