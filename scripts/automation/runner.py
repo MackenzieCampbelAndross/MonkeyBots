@@ -143,15 +143,20 @@ def main():
         run_day(target_day)
         return
 
-    # Otherwise, check calendar schedule
-    # Day 1: Nov 19, Day 2: Nov 20, Day 3: Nov 21, Day 4: Nov 22, Day 5: Nov 23
+    # If "all" argument is passed: run all pending days
+    if len(sys.argv) > 1 and sys.argv[1] == "all":
+        for day_num in range(1, 6):
+            if day_num not in state["completed_days"]:
+                run_day(day_num)
+        return
+
+    # Otherwise, check calendar schedule (catch-up for all days where today >= date)
     for day_num, info in SCHEDULE.items():
         if day_num not in state["completed_days"]:
-            # If today >= scheduled date, run it (catch-up supported!)
             if today_str >= info["date_str"]:
                 log(f"Running scheduled Day {day_num} for {info['date_str']}...")
                 run_day(day_num)
-                break
+                state = load_state()  # Refresh state after run_day
             else:
                 log(f"Day {day_num} is scheduled for {info['date_str']}. Waiting for scheduled date.")
                 break

@@ -23,6 +23,10 @@ class ValidationReport(BaseModel):
     link_count: int = 0
     joint_count: int = 0
 
+    @property
+    def error_count(self) -> int:
+        return len(self.errors)
+
 
 def validate_robot_model(model: RobotModel) -> ValidationReport:
     """Performs deep mechanical and structural validation on a RobotModel."""
@@ -219,3 +223,14 @@ def validate_robot_model(model: RobotModel) -> ValidationReport:
         link_count=len(links),
         joint_count=len(joints),
     )
+
+
+class ModelValidator:
+    """Wrapper class providing object-oriented validation interface."""
+
+    def __init__(self, model: RobotModel):
+        self.model = model
+
+    def validate_all(self) -> ValidationReport:
+        return validate_robot_model(self.model)
+

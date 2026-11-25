@@ -66,7 +66,7 @@ def create_franka_panda() -> RobotModel:
         visuals=[Visual(origin=Origin(xyz=[0, -0.03, 0.1]), geometry=l1_geom)],
         collisions=[Collision(origin=Origin(xyz=[0, -0.03, 0.1]), geometry=l1_geom)],
     )
-    return RobotModel(name="franka_panda", links=links, joints=joints)
+    return RobotModel(name="franka_panda", root_link="panda_link0", links=links, joints=joints)
 ''',
         encoding="utf-8",
     )
@@ -214,7 +214,7 @@ def create_franka_panda() -> RobotModel:
         collisions=[Collision(origin=Origin(xyz=[0, 0, 0.03]), geometry=l7_geom)],
     )
 
-    return RobotModel(name="franka_panda", links=links, joints=joints)
+    return RobotModel(name="franka_panda", root_link="panda_link0", links=links, joints=joints)
 ''',
         encoding="utf-8",
     )
@@ -456,7 +456,7 @@ def create_ur5e_robot() -> RobotModel:
         collisions=[Collision(origin=Origin(xyz=[0, 0.077, 0]), geometry=w3_geom)],
     )
 
-    return RobotModel(name="ur5e_robot", links=links, joints=joints)
+    return RobotModel(name="ur5e_robot", root_link="base_link", links=links, joints=joints)
 ''',
         encoding="utf-8",
     )
@@ -602,7 +602,7 @@ def create_delta_robot() -> RobotModel:
             collisions=[Collision(origin=Origin(xyz=[0.15, 0, 0]), geometry=geom)],
         )
 
-    return RobotModel(name="delta_robot", links=links, joints=joints)
+    return RobotModel(name="delta_robot", root_link="delta_base", links=links, joints=joints)
 ''',
         encoding="utf-8",
     )
@@ -678,7 +678,7 @@ def create_mobile_base() -> RobotModel:
             collisions=[Collision(origin=Origin(xyz=[0, 0, 0]), geometry=w_geom)],
         )
 
-    return RobotModel(name="diff_mobile_base", links=links, joints=joints)
+    return RobotModel(name="diff_mobile_base", root_link="chassis", links=links, joints=joints)
 ''',
         encoding="utf-8",
     )
@@ -730,7 +730,7 @@ def create_robotiq_2f85() -> RobotModel:
             collisions=[Collision(origin=Origin(xyz=[0, 0, 0.025]), geometry=geom)],
         )
 
-    return RobotModel(name="robotiq_2f85", links=links, joints=joints)
+    return RobotModel(name="robotiq_2f85", root_link="robotiq_base", links=links, joints=joints)
 ''',
         encoding="utf-8",
     )
