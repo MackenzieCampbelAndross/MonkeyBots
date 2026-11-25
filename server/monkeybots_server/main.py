@@ -18,6 +18,7 @@ from server.monkeybots_server.router_kinematics import router as kinematics_rout
 from server.monkeybots_server.router_motion import router as motion_router
 from server.monkeybots_server.router_validation import router as validation_router
 from server.monkeybots_server.router_analytics import router as analytics_router
+from server.monkeybots_server.router_exporters import router as exporters_router
 
 log = get_logger("main")
 
@@ -77,6 +78,7 @@ app.include_router(kinematics_router)
 app.include_router(motion_router)
 app.include_router(validation_router)
 app.include_router(analytics_router)
+app.include_router(exporters_router)
 
 
 @app.get("/")
