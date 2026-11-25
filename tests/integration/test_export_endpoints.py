@@ -13,7 +13,7 @@ def test_export_urdf_endpoint():
     assert res.status_code == 200
     assert "application/xml" in res.headers["content-type"]
     assert "<robot" in res.text
-    assert 'name="ur5e"' in res.text
+    assert 'name="ur5e_robot"' in res.text
 
 
 def test_export_mjcf_endpoint():

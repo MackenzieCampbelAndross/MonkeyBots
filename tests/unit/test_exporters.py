@@ -10,7 +10,7 @@ def test_urdf_export():
     model = get_robot_model("ur5e")
     urdf_xml = export_to_urdf(model)
     assert "<robot" in urdf_xml
-    assert 'name="ur5e"' in urdf_xml
+    assert f'name="{model.name}"' in urdf_xml
     assert "<joint" in urdf_xml
     assert "<limit" in urdf_xml
 

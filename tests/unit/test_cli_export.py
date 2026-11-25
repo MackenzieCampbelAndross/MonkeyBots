@@ -12,4 +12,4 @@ def test_cli_export_tmp(tmp_path):
     assert out_file.exists()
     content = out_file.read_text(encoding="utf-8")
     assert "<robot" in content
-    assert 'name="ur5e"' in content
+    assert 'name="ur5e_robot"' in content

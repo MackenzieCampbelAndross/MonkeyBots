@@ -29,6 +29,10 @@ def list_available_robots() -> List[str]:
     return sorted(list(ROBOT_REGISTRY.keys()))
 
 
+# Alias for backward-compatibility
+list_registered_robots = list_available_robots
+
+
 def get_robot_model(name: str) -> RobotModel:
     """Instantiates a robot model by registered name."""
     if name not in ROBOT_REGISTRY:

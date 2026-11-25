@@ -50,6 +50,8 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
+import { TrajectoryPlayer } from "./TrajectoryPlayer";
+import { JointEffortHeatmap } from "./JointEffortHeatmap";
 
 export const MotionControlWorkspace: React.FC = () => {
   const { addToast, telemetry, activeRobotId } = useAppStore();
@@ -463,7 +465,7 @@ export const MotionControlWorkspace: React.FC = () => {
                 </div>
               </div>
 
-              <TrajectoryPlayer durationS={trajectoryDuration} totalWaypoints={waypoints.length} />
+              <TrajectoryPlayer durationS={plannedTraj?.total_duration || 4.0} totalWaypoints={waypoints.length} />
 
               {/* Waypoints Configuration */}
               <div className="bg-slate-950/70 p-2.5 rounded border border-slate-800 space-y-2">
