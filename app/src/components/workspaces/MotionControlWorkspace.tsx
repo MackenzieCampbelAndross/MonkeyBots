@@ -1350,6 +1350,8 @@ export const MotionControlWorkspace: React.FC = () => {
                 </div>
               )}
 
+              <JointEffortHeatmap effortsNm={jointAnglesRad.map((q, i) => Math.sin(q) * (i < 3 ? 45.0 : 8.0))} />
+
               {/* Trajectory Sampling Telemetry Table */}
               {execResult && (
                 <div className="bg-slate-950 p-2.5 rounded border border-slate-800 space-y-1.5 font-sans">
