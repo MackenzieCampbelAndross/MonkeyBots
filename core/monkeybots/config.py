@@ -11,7 +11,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # Application Info
     APP_NAME: str = "MonkeyBots"
-    APP_VERSION: str = "0.1.0"
+    APP_VERSION: str = "0.9.0-rc1"
     DEBUG: bool = False
 
     # Server / Network
